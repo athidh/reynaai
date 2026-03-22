@@ -1,15 +1,18 @@
 # --- Framework & Server ---
 fastapi
 uvicorn[standard]
+gunicorn
 pydantic
 pydantic-settings
 
 # --- Database & Auth ---
+beanie
 motor
 pymongo<4.0.0
 python-jose[cryptography]
 passlib[bcrypt]
 python-dotenv
+python-multipart
 
 # --- Machine Learning & Math ---
 numpy
@@ -21,5 +24,6 @@ joblib
 yt-dlp
 youtube-transcript-api
 
-# --- Generative AI (The "Reyna" Bridge) ---
+# --- Generative AI & API Clients ---
 openai
+httpx
