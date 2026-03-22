@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // ── Base URL — change to deployed URL in production ─────────────────────────
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'https://reyna-ai-c0d7a6cmh7dugbh6.centralindia-01.azurewebsites.net';
 
   // ── Shared timeout for all requests ─────────────────────────────────────────
   static const _timeout    = Duration(seconds: 15);
