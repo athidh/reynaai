@@ -4,6 +4,7 @@ uvicorn[standard]
 gunicorn
 pydantic>=2.0.0
 pydantic-settings
+email-validator>=2.0.0
 
 # --- Database & Auth ---
 beanie>=2.0.1
