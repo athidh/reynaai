@@ -1,0 +1,39 @@
+# ── Python / Backend ─────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+.env
+*.db
+reyna.db
+.pytest_cache/
+*.log
+
+# ── Flutter / Dart ────────────────────────────────────────────────────────────
+reyna_ai/.dart_tool/
+reyna_ai/build/
+reyna_ai/.flutter-plugins
+reyna_ai/.flutter-plugins-dependencies
+reyna_ai/pubspec.lock
+*.g.dart
+
+# ── IDE / Editors ─────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# ── Ai-Tutor (not needed — model is now in backend/app/ml/) ──────────────────
+Ai-Tutor/
+
+# ── Misc project root clutter ─────────────────────────────────────────────────
+.kiro/

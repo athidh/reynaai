@@ -1,0 +1,25 @@
+# --- Framework & Server ---
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# --- Database & Auth ---
+motor
+pymongo<4.0.0
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+
+# --- Machine Learning & Math ---
+numpy
+pandas
+scikit-learn
+joblib
+
+# --- Content Harvesting (The "Soul" Scraper) ---
+yt-dlp
+youtube-transcript-api
+
+# --- Generative AI (The "Reyna" Bridge) ---
+openai

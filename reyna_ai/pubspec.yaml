@@ -1,0 +1,36 @@
+name: reyna_ai
+description: "Reyna AI - Your Personal Elite AI Tutor"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Animations
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  flip_card: ^0.7.0
+  animated_text_kit: ^4.2.2
+  youtube_player_flutter: ^9.1.1
+
+  # State Management
+  provider: ^6.1.2
+
+  # Backend Communication
+  http: ^1.2.1
+
+  # Local Storage (auth token)
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

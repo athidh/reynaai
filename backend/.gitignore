@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.Python
+
+# Virtual environments — DO NOT commit
+.venv/
+venv/
+env/
+
+# Secrets — DO NOT commit
+.env
+
+# SQLite / local DB
+reyna.db
+*.db
+
+# ML model artifacts — KEEP (needed for deployment)
+# pass_predictor_pipeline.joblib  ← intentionally NOT ignored
+# engagement_studyplan.py         ← intentionally NOT ignored
+
+# Test / temp
+.pytest_cache/
+*.log
