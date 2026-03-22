@@ -8,6 +8,7 @@ dist/
 build/
 .venv/
 venv/
+antenv/
 env/
 .env
 *.db
