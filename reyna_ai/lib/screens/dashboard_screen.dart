@@ -565,7 +565,7 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.tertiary],
+                          colors: [AppColors.primary, AppColors.secondary],
                         ),
                       ),
                       child: const Center(
@@ -706,7 +706,7 @@ class _MissionCard extends StatelessWidget {
 
   static const _rankColors = {
     'RADIANT': Color(0xFFFF6D8D),
-    'ELITE': Color(0xFFC428FF),
+    'ELITE': Color(0xFF6A49FA),
     'DIAMOND': Color(0xFF81D4FA),
     'PLATINUM': Color(0xFF80CBC4),
     'GOLD': Color(0xFFFFD54F),

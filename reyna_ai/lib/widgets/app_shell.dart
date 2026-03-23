@@ -5,8 +5,6 @@
 //   1 — ARENA    (Flashcards)
 //   2 — ROADMAP  (Tactical progress stepper)
 //   3 — CHAT     (Reyna Command Center)
-//
-// Training tab removed — video search/play lives in the Dashboard now.
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -37,7 +35,7 @@ class AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,   // Block system back while inside the app
+      canPop: false,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         body: IndexedStack(index: _tab, children: _screens),
@@ -66,15 +64,17 @@ class _NavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRect(
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           height: 72,
-          decoration: const BoxDecoration(
-            color: Color(0xCC0B0E14),
-            border: Border(
-                top: BorderSide(color: AppColors.primaryContainer, width: 1.5)),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.85),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: const Border(
+                top: BorderSide(color: AppColors.primaryContainer, width: 1)),
           ),
           child: Row(
             children: List.generate(_items.length, (i) {
@@ -107,7 +107,10 @@ class _NavBar extends StatelessWidget {
                         duration: const Duration(milliseconds: 200),
                         width: active ? 16 : 0,
                         height: 2,
-                        color: AppColors.primary,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(1),
+                        ),
                       ),
                     ],
                   ),

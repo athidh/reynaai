@@ -12,7 +12,8 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends State<SignupScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -25,6 +26,14 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _education;
   String? _selectedDomain;
   bool _showCustomDomain = false;
+
+  // Staggered entrance animations
+  late final AnimationController _staggerCtrl;
+  late final Animation<double> _headerFade;
+  late final Animation<Offset> _headerSlide;
+  late final Animation<double> _formFade;
+  late final Animation<Offset> _formSlide;
+  late final AnimationController _glowCtrl;
 
   // OULAD-compatible categories
   static const _ageBands = ['0-35', '35-55', '55+'];
@@ -46,49 +55,68 @@ class _SignupScreenState extends State<SignupScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _staggerCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1000));
+
+    _headerFade = CurvedAnimation(
+      parent: _staggerCtrl,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+    );
+    _headerSlide = Tween<Offset>(
+      begin: const Offset(-0.3, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _staggerCtrl,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOutCubic),
+    ));
+
+    _formFade = CurvedAnimation(
+      parent: _staggerCtrl,
+      curve: const Interval(0.3, 0.8, curve: Curves.easeOut),
+    );
+    _formSlide = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _staggerCtrl,
+      curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
+    ));
+
+    _glowCtrl = AnimationController(
+        vsync: this, duration: const Duration(seconds: 5))
+      ..repeat(reverse: true);
+
+    _staggerCtrl.forward();
+  }
+
+  @override
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _confirmCtrl.dispose();
     _customDomainCtrl.dispose();
+    _staggerCtrl.dispose();
+    _glowCtrl.dispose();
     super.dispose();
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Email required';
-    }
-    // Improved email validation
+    if (value == null || value.isEmpty) return 'Email required';
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email address';
-    }
+    if (!emailRegex.hasMatch(value)) return 'Enter a valid email address';
     return null;
   }
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    if (_ageBand == null) {
-      _showError('Please select your age bracket');
-      return;
-    }
-    
-    if (_education == null) {
-      _showError('Please select your education level');
-      return;
-    }
-    
-    if (_selectedDomain == null && !_showCustomDomain) {
-      _showError('Please select a domain or choose Custom');
-      return;
-    }
-    
-    if (_showCustomDomain && _customDomainCtrl.text.trim().isEmpty) {
-      _showError('Please enter your custom domain');
-      return;
-    }
+    if (_ageBand == null) { _showError('Please select your age bracket'); return; }
+    if (_education == null) { _showError('Please select your education level'); return; }
+    if (_selectedDomain == null && !_showCustomDomain) { _showError('Please select a domain'); return; }
+    if (_showCustomDomain && _customDomainCtrl.text.trim().isEmpty) { _showError('Please enter your custom domain'); return; }
 
     final state = context.read<AppState>();
     await state.signup(
@@ -101,7 +129,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (!mounted) return;
-    
     if (state.errorMessage != null) {
       _showError(state.errorMessage!);
     } else {
@@ -125,151 +152,209 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: LayoutBuilder(builder: (ctx, constraints) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: constraints.maxWidth < 400 ? 20 : 32,
-              vertical: 32,
+        child: Stack(
+          children: [
+            // ── Ambient glow ─────────────────────────────────────────────────
+            AnimatedBuilder(
+              animation: _glowCtrl,
+              builder: (_, __) => Positioned(
+                top: -40,
+                left: -60,
+                child: Container(
+                  width: 240,
+                  height: 240,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(colors: [
+                      AppColors.primary.withOpacity(0.05 + 0.03 * _glowCtrl.value),
+                      Colors.transparent,
+                    ]),
+                  ),
+                ),
+              ),
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Icon(Icons.arrow_back, color: AppColors.primary, size: 26),
-                  ),
-                  const SizedBox(height: 40),
-                  
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: const Text(
-                      'ENLIST\nOPERATIVE',
-                      style: TextStyle(
-                        fontFamily: 'Space Grotesk',
-                        fontSize: 46,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -2,
-                        height: 1.0,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'PROTOCOL: COMPLETE OPERATIVE REGISTRATION',
-                    style: TextStyle(
-                      fontFamily: 'Space Grotesk',
-                      fontSize: 9,
-                      letterSpacing: 3,
-                      color: AppColors.outline,
-                    ),
-                  ),
-                  const SizedBox(height: 36),
 
-                  // Basic Info
-                  GlassField(
-                    label: 'OPERATIVE NAME',
-                    controller: _nameCtrl,
-                    validator: (v) => (v == null || v.length < 2) ? 'Name required' : null,
-                  ),
-                  const SizedBox(height: 14),
-                  
-                  GlassField(
-                    label: 'EMAIL',
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: _validateEmail,
-                  ),
-                  const SizedBox(height: 14),
-                  
-                  GlassField(
-                    label: 'PASSWORD',
-                    controller: _passCtrl,
-                    obscure: _obscure,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscure ? Icons.visibility_off : Icons.visibility,
-                        color: AppColors.outlineVariant, 
-                        size: 20,
-                      ),
-                      onPressed: () => setState(() => _obscure = !_obscure),
-                    ),
-                    validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
-                  ),
-                  const SizedBox(height: 14),
-                  
-                  GlassField(
-                    label: 'CONFIRM PASSWORD',
-                    controller: _confirmCtrl,
-                    obscure: _obscure,
-                    validator: (v) => v != _passCtrl.text ? 'Passwords must match' : null,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Age Band Selection
-                  _buildSectionHeader('AGE BRACKET'),
-                  const SizedBox(height: 12),
-                  _buildAgeBandSelector(),
-                  const SizedBox(height: 24),
-
-                  // Education Level Selection
-                  _buildSectionHeader('EDUCATION LEVEL'),
-                  const SizedBox(height: 12),
-                  _buildEducationSelector(),
-                  const SizedBox(height: 24),
-
-                  // Tactical Domain Grid
-                  _buildSectionHeader('TACTICAL DOMAIN'),
-                  const SizedBox(height: 12),
-                  _buildDomainGrid(),
-                  const SizedBox(height: 36),
-
-                  // Submit Button
-                  GradientButton(
-                    label: 'INITIALIZE PROTOCOL',
-                    onTap: state.isLoading ? null : _submit,
-                    isLoading: state.isLoading,
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Login Link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+            // ── Form content ─────────────────────────────────────────────────
+            LayoutBuilder(builder: (ctx, constraints) {
+              return SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: constraints.maxWidth < 400 ? 20 : 32,
+                  vertical: 32,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'ALREADY ENLISTED? ',
-                        style: TextStyle(
-                          fontFamily: 'Space Grotesk',
-                          fontSize: 11,
-                          letterSpacing: 1.5,
-                          color: AppColors.outline,
+                      // Back arrow
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.primary.withOpacity(0.1),
+                          ),
+                          child: const Icon(Icons.arrow_back,
+                              color: AppColors.primary, size: 20),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => Navigator.pushReplacementNamed(context, '/login'),
-                        child: Text(
-                          'LOGIN',
-                          style: TextStyle(
-                            fontFamily: 'Space Grotesk',
-                            fontSize: 11,
-                            letterSpacing: 1.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                      const SizedBox(height: 32),
+
+                      // ── Header with stagger ──────────────────────────────
+                      SlideTransition(
+                        position: _headerSlide,
+                        child: FadeTransition(
+                          opacity: _headerFade,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  gradient: const LinearGradient(colors: [
+                                    AppColors.primary,
+                                    Color(0xFFFEDADA),
+                                  ]),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Create\nAccount',
+                                style: TextStyle(
+                                  fontFamily: 'Space Grotesk',
+                                  fontSize: 44,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -2,
+                                  height: 1.0,
+                                  color: AppColors.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Join Reyna AI and start your learning journey',
+                                style: TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 14,
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // ── Form with stagger ─────────────────────────────────
+                      SlideTransition(
+                        position: _formSlide,
+                        child: FadeTransition(
+                          opacity: _formFade,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GlassField(
+                                label: 'YOUR NAME',
+                                controller: _nameCtrl,
+                                validator: (v) => (v == null || v.length < 2) ? 'Name required' : null,
+                              ),
+                              const SizedBox(height: 14),
+                              GlassField(
+                                label: 'EMAIL',
+                                controller: _emailCtrl,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: _validateEmail,
+                              ),
+                              const SizedBox(height: 14),
+                              GlassField(
+                                label: 'PASSWORD',
+                                controller: _passCtrl,
+                                obscure: _obscure,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscure ? Icons.visibility_off : Icons.visibility,
+                                    color: AppColors.outlineVariant, size: 20,
+                                  ),
+                                  onPressed: () => setState(() => _obscure = !_obscure),
+                                ),
+                                validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
+                              ),
+                              const SizedBox(height: 14),
+                              GlassField(
+                                label: 'CONFIRM PASSWORD',
+                                controller: _confirmCtrl,
+                                obscure: _obscure,
+                                validator: (v) => v != _passCtrl.text ? 'Passwords must match' : null,
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Age Band
+                              _buildSectionHeader('AGE BRACKET'),
+                              const SizedBox(height: 12),
+                              _buildAgeBandSelector(),
+                              const SizedBox(height: 24),
+
+                              // Education
+                              _buildSectionHeader('EDUCATION LEVEL'),
+                              const SizedBox(height: 12),
+                              _buildEducationSelector(),
+                              const SizedBox(height: 24),
+
+                              // Domain
+                              _buildSectionHeader('YOUR DOMAIN'),
+                              const SizedBox(height: 12),
+                              _buildDomainGrid(),
+                              const SizedBox(height: 36),
+
+                              // Submit
+                              GradientButton(
+                                label: 'CREATE ACCOUNT',
+                                onTap: state.isLoading ? null : _submit,
+                                isLoading: state.isLoading,
+                              ),
+                              const SizedBox(height: 20),
+                              
+                              // Login Link
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Already have an account? ',
+                                    style: TextStyle(
+                                      fontFamily: 'Manrope',
+                                      fontSize: 13,
+                                      color: AppColors.outline,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                                    child: const Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                        fontFamily: 'Space Grotesk',
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          );
-        }),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -298,6 +383,7 @@ class _SignupScreenState extends State<SignupScreen> {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
               color: selected 
                 ? AppColors.primary.withOpacity(0.15)
                 : AppColors.surfaceContainerHigh,
@@ -332,6 +418,7 @@ class _SignupScreenState extends State<SignupScreen> {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
               color: selected
                 ? AppColors.primary.withOpacity(0.10)
                 : AppColors.surfaceContainerHigh,
@@ -403,6 +490,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
                       color: selected
                         ? AppColors.primary.withOpacity(0.15)
                         : AppColors.surfaceContainerHigh,
@@ -426,9 +514,9 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             const SizedBox(height: 16),
           ],
-        )).toList(),
+        )),
         
-        // Custom Domain Option
+        // Custom Domain
         GestureDetector(
           onTap: () => setState(() {
             _showCustomDomain = !_showCustomDomain;
@@ -438,6 +526,7 @@ class _SignupScreenState extends State<SignupScreen> {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
               color: _showCustomDomain
                 ? AppColors.primary.withOpacity(0.10)
                 : AppColors.surfaceContainerHigh,

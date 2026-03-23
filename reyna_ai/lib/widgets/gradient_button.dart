@@ -21,11 +21,21 @@ class GradientButton extends StatelessWidget {
       height: 58,
       child: DecoratedBox(
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
           gradient: LinearGradient(
             colors: onTap != null && !isLoading
-              ? [AppColors.primary, AppColors.tertiary]
+              ? [AppColors.primary, AppColors.secondary]
               : [AppColors.outline, AppColors.outlineVariant],
           ),
+          boxShadow: onTap != null && !isLoading
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
         ),
         child: TextButton(
           onPressed: onTap != null && !isLoading ? onTap : null,

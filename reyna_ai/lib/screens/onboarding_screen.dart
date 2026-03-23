@@ -210,9 +210,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: double.infinity,
                 height: 56,
                 child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Color(0xFFC428FF), Color(0xFFFF6D8D)]),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                        colors: [Color(0xFF6A49FA), Color(0xFFC6E6FF)]),
                   ),
                   child: TextButton(
                     onPressed: state.isLoading ? null : _nextStep,
@@ -230,7 +231,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 2,
-                              color: Color(0xFF4F006D),
+                              color: Color(0xFF0D0B1A),
                             ),
                           ),
                   ),

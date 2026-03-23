@@ -1,5 +1,5 @@
 // lib/widgets/glass_field.dart
-// Glassmorphic translucent-purple input field — shared across auth screens
+// Glassmorphic translucent input field — shared across auth screens
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
@@ -48,32 +48,32 @@ class GlassField extends StatelessWidget {
               letterSpacing: 0.5),
           decoration: InputDecoration(
             filled: true,
-            // Glassmorphic: translucent purple tint
-            fillColor: const Color(0xFFC428FF).withOpacity(0.08),
+            // Glassmorphic: translucent indigo tint
+            fillColor: AppColors.primary.withOpacity(0.08),
             contentPadding: const EdgeInsets.symmetric(
                 horizontal: 18, vertical: 18),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                   color: AppColors.primary.withOpacity(0.25), width: 1),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                   color: AppColors.primary.withOpacity(0.25), width: 1),
             ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
                   color: AppColors.primaryContainer, width: 1.5),
             ),
-            errorBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: AppColors.error, width: 1.5),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
-            focusedErrorBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: AppColors.error, width: 1.5),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
             errorStyle: const TextStyle(
                 fontFamily: 'Space Grotesk',

@@ -1,12 +1,6 @@
 // lib/screens/landing_screen.dart
 //
-// Landing Screen — Layout & Overflow Fix
-// ──────────────────────────────────────────────────────────────────────────────
-//  • SafeArea → no notch/system-bar overflow
-//  • Stack-based layout — particle hero fills entire screen
-//  • No Column wrapping the whole screen (avoids vertical constraint fights)
-//  • CTA buttons pinned to bottom via Positioned with MediaQuery-aware padding
-//  • "REYNA AI" + subtext are inside ParticleHero itself (perfectly co-located)
+// Landing Screen — Aurora Wave with Glassmorphism UI
 // ──────────────────────────────────────────────────────────────────────────────
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -25,16 +19,20 @@ class _LandingScreenState extends State<LandingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _btnCtrl;
   late final Animation<double> _btnFade;
+  late final Animation<Offset> _btnSlide;
   bool _showButtons = false;
 
   @override
   void initState() {
     super.initState();
     _btnCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+        vsync: this, duration: const Duration(milliseconds: 800));
     _btnFade = CurvedAnimation(parent: _btnCtrl, curve: Curves.easeOut);
+    _btnSlide = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _btnCtrl, curve: Curves.easeOutCubic));
 
-    // Buttons appear after particle animation completes (4 000ms + 200ms delay)
     Future.delayed(const Duration(milliseconds: 3600), () {
       if (mounted) {
         setState(() => _showButtons = true);
@@ -53,28 +51,17 @@ class _LandingScreenState extends State<LandingScreen>
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final sw = mq.size.width;
-    final sh = mq.size.height;
     final padH = sw < 400 ? 24.0 : 36.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0E17),
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Stack(
           children: [
-            // ── Dot-mesh background ────────────────────────────────────────
-            Positioned.fill(
-              child: CustomPaint(painter: _DotMesh()),
-            ),
-
-            // ── Corner accent brackets ─────────────────────────────────────
-            ..._corners(),
-
-            // ── Full-screen particle hero ──────────────────────────────────
-            // ParticleHero draws particles + neon "REYNA AI" + subtext itself.
-            // The text is placed at 42% height to leave room above and below.
+            // ── Full-screen aurora hero ─────────────────────────────────────
             const Positioned.fill(child: ParticleHero()),
 
-            // ── Top status bar ─────────────────────────────────────────────
+            // ── Top status bar ──────────────────────────────────────────────
             Positioned(
               top: 12,
               left: 20,
@@ -97,48 +84,54 @@ class _LandingScreenState extends State<LandingScreen>
               ),
             ),
 
-            // ── Soul Orb icon centred above particle zone ──────────────────
+            // ── Pulsing Soul Orb ────────────────────────────────────────────
             Positioned(
-              top: sh * 0.22,
+              top: mq.size.height * 0.22,
               left: 0,
               right: 0,
               child: const Center(child: _SoulOrbIcon()),
             ),
 
-            // ── CTA buttons — fixed to bottom, never overflow ──────────────
+            // ── Corner accent brackets ──────────────────────────────────────
+            ..._corners(),
+
+            // ── CTA buttons ─────────────────────────────────────────────────
             if (_showButtons)
               Positioned(
                 bottom: math.max(mq.padding.bottom + 8, 24),
                 left: padH,
                 right: padH,
-                child: FadeTransition(
-                  opacity: _btnFade,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _GradientBtn(
-                        label: 'GET STARTED',
-                        icon: Icons.bolt,
-                        onTap: () =>
-                            Navigator.pushNamed(context, '/signup'),
-                      ),
-                      const SizedBox(height: 12),
-                      _OutlineBtn(
-                        label: 'LOGIN',
-                        onTap: () =>
-                            Navigator.pushNamed(context, '/login'),
-                      ),
-                    ],
+                child: SlideTransition(
+                  position: _btnSlide,
+                  child: FadeTransition(
+                    opacity: _btnFade,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _GradientBtn(
+                          label: 'GET STARTED',
+                          icon: Icons.bolt,
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/signup'),
+                        ),
+                        const SizedBox(height: 12),
+                        _OutlineBtn(
+                          label: 'LOGIN',
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/login'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-            // ── Bottom status HUD — hidden once buttons appear (avoids 16px overlap) ──
+            // ── Bottom HUD ──────────────────────────────────────────────────
             if (!_showButtons)
-              Positioned(
+              const Positioned(
                 bottom: 8,
                 left: 20,
-                child: const _HudLabel('NEURAL_PARTICLES [ 400 ]'),
+                child: _HudLabel('AURORA_WAVE [ ACTIVE ]'),
               ),
           ],
         ),
@@ -148,7 +141,7 @@ class _LandingScreenState extends State<LandingScreen>
 
   List<Widget> _corners() {
     const s = 44.0;
-    final c = AppColors.primary.withOpacity(0.30);
+    final c = AppColors.primary.withOpacity(0.20);
     Widget mk(Alignment a) => Positioned.fill(
           child: Align(
             alignment: a,
@@ -158,8 +151,7 @@ class _LandingScreenState extends State<LandingScreen>
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border(
-                    top: (a == Alignment.topLeft ||
-                            a == Alignment.topRight)
+                    top: (a == Alignment.topLeft || a == Alignment.topRight)
                         ? BorderSide(color: c, width: 2)
                         : BorderSide.none,
                     bottom: (a == Alignment.bottomLeft ||
@@ -190,7 +182,7 @@ class _LandingScreenState extends State<LandingScreen>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Pulsing Soul Orb icon - pulses faster based on ML Success Probability
+// Pulsing Soul Orb icon
 // ─────────────────────────────────────────────────────────────────────────────
 class _SoulOrbIcon extends StatefulWidget {
   const _SoulOrbIcon();
@@ -205,7 +197,6 @@ class _SoulOrbIconState extends State<_SoulOrbIcon>
   @override
   void initState() {
     super.initState();
-    // Initialize with default 2-second duration
     _c = AnimationController(
       vsync: this, 
       duration: const Duration(seconds: 2),
@@ -215,18 +206,13 @@ class _SoulOrbIconState extends State<_SoulOrbIcon>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Update pulse speed based on engagement score
     _updatePulseSpeed();
   }
 
   void _updatePulseSpeed() {
     final state = Provider.of<AppState>(context, listen: false);
-    // Base duration: 2 seconds, faster as success probability increases
-    // 0.0 probability = 2.0 seconds, 1.0 probability = 0.5 seconds
-    final successProb = state.engagementScore; // This represents success probability
-    final duration = 2.0 - (1.5 * successProb); // 2.0s -> 0.5s
-    
-    // Update existing controller's duration instead of creating new one
+    final successProb = state.engagementScore;
+    final duration = 2.0 - (1.5 * successProb);
     _c.duration = Duration(milliseconds: (duration * 1000).round());
     if (!_c.isAnimating) {
       _c.repeat(reverse: true);
@@ -242,32 +228,35 @@ class _SoulOrbIconState extends State<_SoulOrbIcon>
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final intensity = 0.15 + (0.35 * state.engagementScore); // More intense glow with higher success
+    final intensity = 0.15 + (0.35 * state.engagementScore);
     
     return AnimatedBuilder(
       animation: _c,
-      builder: (_, __) => Transform.rotate(
-        angle: math.pi / 4,
-        child: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.primary, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(intensity + 0.2 * _c.value),
-                blurRadius: 14 + (18 * _c.value) + (10 * state.engagementScore),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Transform.rotate(
-              angle: -math.pi / 4,
-              child: Container(
-                width: 11,
-                height: 11,
-                color: AppColors.primary,
-              ),
+      builder: (_, __) => Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(intensity + 0.2 * _c.value),
+              blurRadius: 14 + (18 * _c.value) + (10 * state.engagementScore),
+            ),
+            BoxShadow(
+              color: const Color(0xFFC6E6FF).withOpacity(0.1 * _c.value),
+              blurRadius: 30,
+              spreadRadius: 4,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ),
@@ -292,9 +281,17 @@ class _GradientBtn extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFFC428FF), Color(0xFFFF6D8D)]),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          gradient: const LinearGradient(
+              colors: [Color(0xFF6A49FA), Color(0xFFC6E6FF)]),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6A49FA).withOpacity(0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: TextButton(
           onPressed: onTap,
@@ -310,13 +307,13 @@ class _GradientBtn extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 3,
-                    color: Color(0xFF4F006D),
+                    color: Color(0xFF0D0B1A),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(icon, color: const Color(0xFF4F006D), size: 18),
+              Icon(icon, color: const Color(0xFF0D0B1A), size: 18),
             ],
           ),
         ),
@@ -338,13 +335,13 @@ class _OutlineBtn extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.primary, width: 1.5),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero),
+          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14)),
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Space Grotesk',
             fontSize: 14,
             fontWeight: FontWeight.w900,
@@ -370,26 +367,6 @@ class _HudLabel extends StatelessWidget {
             fontFamily: 'Space Grotesk',
             fontSize: 8,
             letterSpacing: 2,
-            color: Color(0xFF45484F)),
+            color: AppColors.outlineVariant),
       );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Dot mesh background painter
-// ─────────────────────────────────────────────────────────────────────────────
-class _DotMesh extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = const Color(0xFFC428FF).withOpacity(0.06);
-    const spacing = 26.0;
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), 1.0, p);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotMesh _) => false;
 }

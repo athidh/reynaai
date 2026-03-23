@@ -479,6 +479,13 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Soft reset — just rewinds the card position, keeps cards intact.
+  void resetCardIndex() {
+    _currentCardIndex = 0;
+    notifyListeners();
+  }
+
+  /// Full reset — clears cards and index.
   void resetCards() {
     _currentCardIndex = 0;
     flashcardsReady = false;

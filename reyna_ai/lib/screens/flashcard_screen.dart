@@ -122,7 +122,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     final state = context.read<AppState>();
     if (state.lastVideoTranscript.isEmpty) return;
     setState(() => _fetchingCards = true);
-    state.resetCards();
+    // Soft reset — keep existing cards visible while regenerating
+    state.resetCardIndex();
     await state.generateCardsFromTranscript(
       transcriptText: state.lastVideoTranscript,
       domain: state.domainInterest,
@@ -131,6 +132,16 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
       setState(() {
         _fetchingCards = false;
         _mixedDeck = _buildMixedDeck(state.dynamicFlashcards);
+        _lastKnownCardCount = _mixedDeck.length;
+        // Reset scoring for the new deck
+        _totalRecognitionTime = 0.0;
+        _cardsAnswered = 0;
+        _correctCount = 0;
+        _answered = false;
+        _showAnswer = false;
+        _feedback = '';
+        _selectedOption = null;
+        _answerCtrl.clear();
       });
     }
   }

@@ -3,32 +3,37 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Empress Protocol Color Tokens
-  static const Color surface = Color(0xFF0B0E14);
-  static const Color surfaceDim = Color(0xFF0B0E14);
-  static const Color surfaceContainerLow = Color(0xFF10131A);
-  static const Color surfaceContainer = Color(0xFF161A21);
-  static const Color surfaceContainerHigh = Color(0xFF1C2028);
-  static const Color surfaceContainerHighest = Color(0xFF22262F);
-  static const Color surfaceBright = Color(0xFF282C36);
+  // ── New Palette Tokens ──────────────────────────────────────────────────────
+  // Primary:   #6A49FA (vivid indigo)
+  // Deep:      #453284 (deep purple)
+  // Sky:       #C6E6FF (soft sky blue)
+  // Blush:     #FEDADA (blush pink)
 
-  static const Color primary = Color(0xFFDF8EFF);
-  static const Color primaryContainer = Color(0xFFD67AFC);
-  static const Color primaryDim = Color(0xFFD378F9);
-  static const Color onPrimary = Color(0xFF4F006D);
+  static const Color surface = Color(0xFF0D0B1A);
+  static const Color surfaceDim = Color(0xFF0D0B1A);
+  static const Color surfaceContainerLow = Color(0xFF11101F);
+  static const Color surfaceContainer = Color(0xFF171526);
+  static const Color surfaceContainerHigh = Color(0xFF1D1A2E);
+  static const Color surfaceContainerHighest = Color(0xFF242136);
+  static const Color surfaceBright = Color(0xFF2A273E);
 
-  static const Color secondary = Color(0xFFB889FF);
-  static const Color secondaryContainer = Color(0xFF5A2A9C);
-  static const Color onSecondary = Color(0xFF320067);
+  static const Color primary = Color(0xFF6A49FA);
+  static const Color primaryContainer = Color(0xFF453284);
+  static const Color primaryDim = Color(0xFF5A3CE0);
+  static const Color onPrimary = Color(0xFFFFFFFF);
 
-  static const Color tertiary = Color(0xFFFF6D8D);
-  static const Color tertiaryContainer = Color(0xFFFC306F);
-  static const Color onTertiary = Color(0xFF480018);
+  static const Color secondary = Color(0xFFC6E6FF);
+  static const Color secondaryContainer = Color(0xFF2A4060);
+  static const Color onSecondary = Color(0xFF0A1A2F);
 
-  static const Color outline = Color(0xFF73757D);
-  static const Color outlineVariant = Color(0xFF45484F);
-  static const Color onSurface = Color(0xFFECEDF6);
-  static const Color onSurfaceVariant = Color(0xFFA9ABB3);
+  static const Color tertiary = Color(0xFFFEDADA);
+  static const Color tertiaryContainer = Color(0xFFF9A8A8);
+  static const Color onTertiary = Color(0xFF3D1010);
+
+  static const Color outline = Color(0xFF7A7890);
+  static const Color outlineVariant = Color(0xFF4A4860);
+  static const Color onSurface = Color(0xFFF0EEF6);
+  static const Color onSurfaceVariant = Color(0xFFABA9C0);
 
   static const Color error = Color(0xFFFF6E84);
 }
@@ -54,7 +59,7 @@ class AppTheme {
         outlineVariant: AppColors.outlineVariant,
       ),
       textTheme: TextTheme(
-        // Space Grotesk - Headlines/Labels (Command voice)
+        // Space Grotesk - Headlines/Labels
         displayLarge: GoogleFonts.spaceGrotesk(
           color: AppColors.onSurface,
           fontSize: 80,
@@ -96,7 +101,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           letterSpacing: 1.5,
         ),
-        // Manrope - Body (Supportive voice)
+        // Manrope - Body
         bodyLarge: GoogleFonts.manrope(
           color: AppColors.onSurface,
           fontSize: 16,
@@ -113,11 +118,10 @@ class AppTheme {
           fontWeight: FontWeight.w300,
         ),
       ),
-      // 0px border radius - No roundness rule
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceContainerHigh,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -125,7 +129,7 @@ class AppTheme {
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppColors.primaryContainer, width: 1),
         ),
         hintStyle: GoogleFonts.spaceGrotesk(
@@ -136,7 +140,7 @@ class AppTheme {
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xCC0B0E14),
+        backgroundColor: Color(0xCC0D0B1A),
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.outlineVariant,
         elevation: 0,
@@ -160,11 +164,13 @@ class AppDecorations {
   /// Glassmorphism card (modals, overlays)
   static BoxDecoration glassCard({double opacity = 0.4}) => BoxDecoration(
         color: AppColors.surfaceContainerHighest.withOpacity(opacity),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primaryContainer, width: 1.5),
       );
 
-  /// Razor edge border only
+  /// Soft edge border
   static BoxDecoration razorEdge({Color? color}) => BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
             color: color ?? AppColors.primaryContainer, width: 1.5),
       );
@@ -172,14 +178,16 @@ class AppDecorations {
   /// Left accent border (tactical panel)
   static BoxDecoration leftAccentBorder({Color? color}) => BoxDecoration(
         color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
         border: Border(
           left: BorderSide(color: color ?? AppColors.primary, width: 4),
         ),
       );
 
-  /// Soul Orb wrapper - rotated diamond glow
+  /// Soul Orb wrapper - glowing container
   static BoxDecoration soulOrb({double glowRadius = 60}) => BoxDecoration(
         color: AppColors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primary, width: 3),
         boxShadow: [
           BoxShadow(

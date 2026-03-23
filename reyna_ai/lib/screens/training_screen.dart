@@ -719,7 +719,7 @@ class _LevelUpOverlay extends StatelessWidget {
       'GOLD': Color(0xFFFFD54F),
       'IRON': Color(0xFF73757D),
     };
-    return rankColors[rank] ?? const Color(0xFFC428FF);
+    return rankColors[rank] ?? const Color(0xFF6A49FA);
   }
 
   @override
