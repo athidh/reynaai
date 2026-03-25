@@ -106,31 +106,60 @@ async def reyna_voice_chat(websocket: WebSocket, token: str):
             if not audio_buffer:
                 continue
 
-            # 2. Transcribe Audio using ElevenLabs Scribe API (HTTP for simplicity on binary uploads)
-            # Alternatively, we could stream it to ElevenLabs STT WebSocket if we had the exact schema.
-            # We'll use the REST API for accurate extraction for now since it's robust.
-            stt_url = "https://api.elevenlabs.io/v1/speech-to-text"
-            
-            headers = {"xi-api-key": ELEVENLABS_API_KEY}
-            files = {"file": ("audio.wav", bytes(audio_buffer), "audio/wav")}
             transcription = ""
             
+            # ── Primary STT: ElevenLabs Scribe ──────────────────────────
             try:
-                # To accurately transcribe, post the raw webm to Elevenlabs STT REST if available, 
-                # or fallback to OpenAI whisper if ElevenLabs HTTP STT is not configured identically.
-                async with httpx.AsyncClient() as client:
-                    # using openai whisper endpoint as fallback syntax just in case elevenlabs lacks http stt endpoint
+                async with httpx.AsyncClient(timeout=30.0) as client:
                     stt_resp = await client.post(
-                        "https://api.openai.com/v1/audio/transcriptions",
-                        headers={"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"}, 
+                        "https://api.elevenlabs.io/v1/speech-to-text",
+                        headers={"xi-api-key": ELEVENLABS_API_KEY},
                         files={"file": ("audio.wav", bytes(audio_buffer), "audio/wav")},
-                        data={"model": "whisper-1"}
+                        data={"model_id": "scribe_v1"},
                     )
-                    j_resp = stt_resp.json()
-                    transcription = j_resp.get("text", "")
+                    if stt_resp.status_code == 200:
+                        j_resp = stt_resp.json()
+                        transcription = j_resp.get("text", "").strip()
+                        print(f"[ElevenLabs STT] Transcription: '{transcription}'")
+                    else:
+                        print(f"[ElevenLabs STT] Failed ({stt_resp.status_code}): {stt_resp.text[:200]}")
             except Exception as e:
-                print(f"STT Error: {e}")
-                transcription = "I am ready."
+                print(f"[ElevenLabs STT] Error: {e}")
+
+            # ── Fallback STT: OpenAI Whisper ─────────────────────────────
+            if not transcription:
+                try:
+                    openai_key = os.getenv("OPENAI_API_KEY", "")
+                    if openai_key:
+                        async with httpx.AsyncClient(timeout=30.0) as client:
+                            stt_resp = await client.post(
+                                "https://api.openai.com/v1/audio/transcriptions",
+                                headers={"Authorization": f"Bearer {openai_key}"},
+                                files={"file": ("audio.wav", bytes(audio_buffer), "audio/wav")},
+                                data={"model": "whisper-1"},
+                            )
+                            if stt_resp.status_code == 200:
+                                j_resp = stt_resp.json()
+                                transcription = j_resp.get("text", "").strip()
+                                print(f"[Whisper STT] Transcription: '{transcription}'")
+                            else:
+                                print(f"[Whisper STT] Failed ({stt_resp.status_code}): {stt_resp.text[:200]}")
+                except Exception as e:
+                    print(f"[Whisper STT] Error: {e}")
+
+            # ── If both failed, notify user ──────────────────────────────
+            if not transcription:
+                print("[STT] All providers failed — sending error to client")
+                await websocket.send_text(json.dumps({
+                    "event": "transcription",
+                    "text": "(Could not transcribe audio — please try again or use text input)"
+                }))
+                await websocket.send_text(json.dumps({
+                    "event": "reyna_response",
+                    "text": "I couldn't catch that, operative. Try speaking closer to the mic or type your question instead."
+                }))
+                await websocket.send_text(json.dumps({"event": "audio_done"}))
+                continue
 
             # Notify UI what the user said
             await websocket.send_text(json.dumps({"event": "transcription", "text": transcription}))
