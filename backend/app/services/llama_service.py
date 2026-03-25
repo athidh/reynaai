@@ -160,7 +160,7 @@ async def _call_nim(
         "Content-Type": "application/json",
     }
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(timeout=55) as client:
         resp = await client.post(
             f"{settings.NIM_ENDPOINT}/chat/completions",
             headers=headers,
@@ -223,7 +223,7 @@ async def _call_openai(
         "Content-Type": "application/json",
     }
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(timeout=55) as client:
         resp = await client.post(
             "https://api.openai.com/v1/chat/completions",
             headers=headers,
@@ -319,16 +319,33 @@ async def generate_reyna_briefing(
 def _parse_json(text: str) -> Dict[str, Any]:
     """Strip markdown fences and parse the first JSON object found."""
     import re
-    # Extract just the JSON object from the text in case the LLM added conversational filler
-    match = re.search(r'\{(?:[^{}]|(?(?=\{).*\}))*\}', text, re.DOTALL)
-    if match:
-        text = match.group(0)
-    else:
-        # Fallback regex if the recursive-ish pattern fails
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            text = match.group(0)
-    return json.loads(text)
+    # Remove markdown code fences if present
+    text = re.sub(r'^```(?:json)?\s*', '', text.strip())
+    text = re.sub(r'\s*```$', '', text.strip())
+    
+    # Find the first '{' and match braces to extract full JSON object
+    start = text.find('{')
+    if start == -1:
+        raise ValueError(f"No JSON object found in LLM response: {text[:200]}")
+    
+    depth = 0
+    end = start
+    for i in range(start, len(text)):
+        if text[i] == '{':
+            depth += 1
+        elif text[i] == '}':
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+    
+    json_str = text[start:end]
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError as e:
+        print(f"[_parse_json] Failed to parse JSON: {e}")
+        print(f"[_parse_json] Raw text: {json_str[:300]}")
+        raise
 
 
 def _deterministic_placeholder(
