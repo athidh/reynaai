@@ -112,7 +112,7 @@ async def reyna_voice_chat(websocket: WebSocket, token: str):
             stt_url = "https://api.elevenlabs.io/v1/speech-to-text"
             
             headers = {"xi-api-key": ELEVENLABS_API_KEY}
-            files = {"file": ("audio.webm", bytes(audio_buffer), "audio/webm")}
+            files = {"file": ("audio.wav", bytes(audio_buffer), "audio/wav")}
             transcription = ""
             
             try:
@@ -123,7 +123,7 @@ async def reyna_voice_chat(websocket: WebSocket, token: str):
                     stt_resp = await client.post(
                         "https://api.openai.com/v1/audio/transcriptions",
                         headers={"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"}, 
-                        files={"file": ("audio.webm", bytes(audio_buffer), "audio/webm")},
+                        files={"file": ("audio.wav", bytes(audio_buffer), "audio/wav")},
                         data={"model": "whisper-1"}
                     )
                     j_resp = stt_resp.json()

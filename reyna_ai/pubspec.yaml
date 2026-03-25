@@ -30,7 +30,7 @@ dependencies:
 
   # Voice Chat Integration
   web_socket_channel: ^2.4.0
-  record: ^5.0.5
+  record: ^6.1.1
   audioplayers: ^5.2.1
 
 dev_dependencies:

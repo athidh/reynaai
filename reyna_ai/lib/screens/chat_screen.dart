@@ -34,6 +34,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final _audioPlayer = AudioPlayer();
   WebSocketChannel? _channel;
   bool _isRecording = false;
+  final BytesBuilder _ttsBuffer = BytesBuilder();  // Buffer for TTS audio chunks
+  int? _pendingVoiceBubbleIndex;  // Index of the user's voice placeholder bubble
 
   @override
   void initState() {
@@ -123,9 +125,9 @@ class _ChatScreenState extends State<ChatScreen> {
       // Start
       if (await _audioRecorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
-        final path = '${dir.path}/reyna_mic.m4a';
+        final path = '${dir.path}/reyna_mic.wav';
         await _audioRecorder.start(
-          const RecordConfig(encoder: AudioEncoder.aacLc),
+          const RecordConfig(encoder: AudioEncoder.wav),
           path: path,
         );
         setState(() => _isRecording = true);
@@ -142,8 +144,16 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    setState(() => _isTyping = true);
+    // Add a placeholder bubble for the user's voice message immediately
+    setState(() {
+      _messages.add(const _Msg(isReyna: false, text: 'Transmitting voice...', isVoice: true));
+      _pendingVoiceBubbleIndex = _messages.length - 1;
+      _isTyping = true;
+    });
     _scrollToBottom();
+
+    // Reset TTS audio buffer
+    _ttsBuffer.clear();
 
     final wsUrl = ApiService.baseUrl.replaceFirst(RegExp(r'^http'), 'ws');
     _channel?.sink.close();
@@ -159,7 +169,11 @@ class _ChatScreenState extends State<ChatScreen> {
             if (event == 'transcription') {
               final text = data['text'] as String;
               setState(() {
-                _messages.add(_Msg(isReyna: false, text: text, isVoice: true));
+                // Update the placeholder bubble with the real transcription
+                if (_pendingVoiceBubbleIndex != null && _pendingVoiceBubbleIndex! < _messages.length) {
+                  _messages[_pendingVoiceBubbleIndex!] = _Msg(isReyna: false, text: text, isVoice: true);
+                }
+                _pendingVoiceBubbleIndex = null;
                 _history.add({'role': 'user', 'content': text});
               });
               _scrollToBottom();
@@ -172,15 +186,19 @@ class _ChatScreenState extends State<ChatScreen> {
               });
               _scrollToBottom();
             } else if (event == 'audio_done') {
+              // Play all buffered TTS audio at once — prevents stutter
+              final fullAudio = _ttsBuffer.takeBytes();
+              if (fullAudio.isNotEmpty) {
+                _audioPlayer.play(BytesSource(fullAudio));
+              }
               _channel?.sink.close();
             }
           } catch (e) {
             debugPrint('WS Parse Error: $e');
           }
         } else if (message is Uint8List) {
-          // Play incoming ElevenLabs synthesized bytes
-          // Note: using BytesSource in audioplayers for immediate playback of the TTS chunk
-          _audioPlayer.play(BytesSource(message));
+          // Buffer incoming TTS audio chunks instead of playing each one
+          _ttsBuffer.add(message);
         }
       },
       onError: (e) {
@@ -319,13 +337,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: _isRecording ? Colors.red.withOpacity(0.15) : AppColors.surfaceContainerHighest,
-                        border: Border.all(color: _isRecording ? Colors.red : AppColors.primaryContainer, width: _isRecording ? 2 : 1),
+                        color: _isRecording ? Colors.red.withOpacity(0.15) : AppColors.primary.withOpacity(0.08),
+                        border: Border.all(color: _isRecording ? Colors.red : AppColors.primary.withOpacity(0.4), width: _isRecording ? 2 : 1.5),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         _isRecording ? Icons.stop : Icons.mic,
-                        color: _isRecording ? Colors.red : AppColors.outlineVariant,
+                        color: _isRecording ? Colors.red : AppColors.primary,
                         size: 20
                       ),
                     ),
@@ -336,8 +354,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHighest,
-                        border: Border.all(color: AppColors.primaryContainer, width: 1),
+                        color: AppColors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.outline.withOpacity(0.3), width: 1.5),
                       ),
                       child: TextField(
                         controller: _msgCtrl,
@@ -347,7 +366,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         minLines: 1,
                         decoration: InputDecoration(
                           hintText: _isRecording ? 'Listening...' : (hasTranscript ? 'Ask Reyna about the video...' : 'Ask Reyna anything...'),
-                          hintStyle: TextStyle(fontFamily: 'Space Grotesk', color: _isRecording ? Colors.red : AppColors.outlineVariant, fontSize: 12),
+                          hintStyle: TextStyle(fontFamily: 'Space Grotesk', color: _isRecording ? Colors.red : AppColors.onSurfaceVariant, fontSize: 12),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         ),
@@ -363,7 +382,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Container(
                       width: 48,
                       height: 48,
-                      color: _isTyping ? AppColors.outline : AppColors.primary,
+                      decoration: BoxDecoration(
+                        color: _isTyping ? AppColors.primaryDim : AppColors.primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: _isTyping
                           ? Center(child: SizedBox.square(dimension: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
                           : Icon(Icons.send, color: AppColors.onPrimary, size: 20),
