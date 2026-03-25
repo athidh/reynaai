@@ -89,7 +89,7 @@ class _LandingScreenState extends State<LandingScreen>
               top: mq.size.height * 0.22,
               left: 0,
               right: 0,
-              child: const Center(child: _SoulOrbIcon()),
+              child: Center(child: _SoulOrbIcon()),
             ),
 
             // ── Corner accent brackets ──────────────────────────────────────
@@ -114,7 +114,7 @@ class _LandingScreenState extends State<LandingScreen>
                           onTap: () =>
                               Navigator.pushNamed(context, '/signup'),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _OutlineBtn(
                           label: 'LOGIN',
                           onTap: () =>
@@ -302,7 +302,7 @@ class _GradientBtn extends StatelessWidget {
               Flexible(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
@@ -312,7 +312,7 @@ class _GradientBtn extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Icon(icon, color: const Color(0xFF0D0B1A), size: 18),
             ],
           ),
@@ -335,13 +335,13 @@ class _OutlineBtn extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          side: BorderSide(color: AppColors.primary, width: 1.5),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14)),
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Space Grotesk',
             fontSize: 14,
             fontWeight: FontWeight.w900,
@@ -363,10 +363,10 @@ class _HudLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
             fontFamily: 'Space Grotesk',
             fontSize: 8,
             letterSpacing: 2,
-            color: AppColors.outlineVariant),
+            color: AppColors.outline),
       );
 }

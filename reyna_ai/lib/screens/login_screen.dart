@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(state.errorMessage!,
-              style: const TextStyle(fontFamily: 'Space Grotesk')),
+              style: TextStyle(fontFamily: 'Space Grotesk')),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -180,12 +180,12 @@ class _LoginScreenState extends State<LoginScreen>
                               borderRadius: BorderRadius.circular(12),
                               color: AppColors.primary.withOpacity(0.1),
                             ),
-                            child: const Icon(Icons.arrow_back,
+                            child: Icon(Icons.arrow_back,
                                 color: AppColors.primary, size: 20),
                           ),
                         ),
 
-                        const SizedBox(height: 48),
+                        SizedBox(height: 48),
 
                         // ── Title with stagger ──────────────────────────────
                         SlideTransition(
@@ -201,14 +201,14 @@ class _LoginScreenState extends State<LoginScreen>
                                   height: 4,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(2),
-                                    gradient: const LinearGradient(colors: [
+                                    gradient: LinearGradient(colors: [
                                       AppColors.primary,
                                       Color(0xFFC6E6FF),
                                     ]),
                                   ),
                                 ),
-                                const SizedBox(height: 20),
-                                const Text(
+                                SizedBox(height: 20),
+                                Text(
                                   'Welcome\nBack',
                                   style: TextStyle(
                                     fontFamily: 'Space Grotesk',
@@ -219,8 +219,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     color: AppColors.onSurface,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                const Text(
+                                SizedBox(height: 8),
+                                Text(
                                   'Sign in to continue your learning journey',
                                   style: TextStyle(
                                     fontFamily: 'Manrope',
@@ -233,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
 
-                        const SizedBox(height: 40),
+                        SizedBox(height: 40),
 
                         // ── Fields with stagger ─────────────────────────────
                         SlideTransition(
@@ -251,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           ? 'Valid email required'
                                           : null,
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: 16),
                                 GlassField(
                                   label: 'PASSWORD',
                                   controller: _passCtrl,
@@ -275,7 +275,7 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
 
-                        const SizedBox(height: 36),
+                        SizedBox(height: 36),
 
                         // ── Submit with stagger ─────────────────────────────
                         SlideTransition(
@@ -285,12 +285,12 @@ class _LoginScreenState extends State<LoginScreen>
                             child: Column(
                               children: [
                                 GradientButton(
-                                    label: 'SIGN IN', onTap: _submit),
-                                const SizedBox(height: 20),
+                                    text: 'SIGN IN', onTap: _submit),
+                                SizedBox(height: 20),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Text('Don\'t have an account? ',
+                                    Text('Don\'t have an account? ',
                                         style: TextStyle(
                                             fontFamily: 'Manrope',
                                             fontSize: 13,
@@ -299,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       onTap: () =>
                                           Navigator.pushReplacementNamed(
                                               context, '/signup'),
-                                      child: const Text('Sign Up',
+                                      child: Text('Sign Up',
                                           style: TextStyle(
                                               fontFamily: 'Space Grotesk',
                                               fontSize: 13,

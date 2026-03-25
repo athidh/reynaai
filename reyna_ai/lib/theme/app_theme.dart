@@ -9,42 +9,55 @@ class AppColors {
   // Sky:       #C6E6FF (soft sky blue)
   // Blush:     #FEDADA (blush pink)
 
-  static const Color surface = Color(0xFF0D0B1A);
-  static const Color surfaceDim = Color(0xFF0D0B1A);
-  static const Color surfaceContainerLow = Color(0xFF11101F);
-  static const Color surfaceContainer = Color(0xFF171526);
-  static const Color surfaceContainerHigh = Color(0xFF1D1A2E);
-  static const Color surfaceContainerHighest = Color(0xFF242136);
-  static const Color surfaceBright = Color(0xFF2A273E);
+  static bool isDark = false;
 
-  static const Color primary = Color(0xFF6A49FA);
-  static const Color primaryContainer = Color(0xFF453284);
-  static const Color primaryDim = Color(0xFF5A3CE0);
-  static const Color onPrimary = Color(0xFFFFFFFF);
+  // ── Core Brand Palette ─────────────────────────────────────────
+  static Color get primary          => const Color(0xFF6A49FA);
+  static Color get primaryContainer => isDark ? const Color(0xFF3B2890) : const Color(0xFFEBE6FF);
+  static Color get primaryDim       => isDark ? const Color(0xFF5A3CE0) : const Color(0xFF866BFB);
+  static Color get onPrimary        => const Color(0xFFFFFFFF);
 
-  static const Color secondary = Color(0xFFC6E6FF);
-  static const Color secondaryContainer = Color(0xFF2A4060);
-  static const Color onSecondary = Color(0xFF0A1A2F);
+  static Color get secondary        => const Color(0xFFC6E6FF);
+  static Color get secondaryContainer => isDark ? const Color(0xFF233656) : const Color(0xFFE0F0FF);
+  static Color get onSecondary      => isDark ? const Color(0xFFE0F0FF) : const Color(0xFF0A1A2F);
 
-  static const Color tertiary = Color(0xFFFEDADA);
-  static const Color tertiaryContainer = Color(0xFFF9A8A8);
-  static const Color onTertiary = Color(0xFF3D1010);
+  static Color get tertiary         => const Color(0xFFFEDADA);
+  static Color get tertiaryContainer => isDark ? const Color(0xFF904242) : const Color(0xFFFFEDED);
+  static Color get onTertiary       => isDark ? const Color(0xFFFFEDED) : const Color(0xFF4A1A1A);
 
-  static const Color outline = Color(0xFF7A7890);
-  static const Color outlineVariant = Color(0xFF4A4860);
-  static const Color onSurface = Color(0xFFF0EEF6);
-  static const Color onSurfaceVariant = Color(0xFFABA9C0);
+  // ── Premium Background & Surfaces (High Contrast) ──────────────
+  static Color get background              => isDark ? const Color(0xFF090812) : const Color(0xFFF4F6F9);
+  static Color get surface                 => isDark ? const Color(0xFF100E1C) : const Color(0xFFFFFFFF);
+  static Color get surfaceContainerLow     => isDark ? const Color(0xFF151325) : const Color(0xFFF8F9FA);
+  static Color get surfaceContainer        => isDark ? const Color(0xFF1B1830) : const Color(0xFFF1F3F5);
+  static Color get surfaceContainerHigh    => isDark ? const Color(0xFF231F3D) : const Color(0xFFE9ECEF);
+  static Color get surfaceContainerHighest => isDark ? const Color(0xFF2D284D) : const Color(0xFFDEE2E6);
+  static Color get surfaceBright           => isDark ? const Color(0xFF2A273E) : const Color(0xFFFFFFFF);
+  static Color get surfaceDim              => isDark ? const Color(0xFF090812) : const Color(0xFFF8F9FA);
 
-  static const Color error = Color(0xFFFF6E84);
+  // ── Typography (Max Legibility) ────────────────────────────────
+  static Color get onBackground     => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0F172A);
+  static Color get onSurface        => isDark ? const Color(0xFFF8FAFC) : const Color(0xFF1E293B);
+  static Color get onSurfaceVariant => isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569);
+
+  // ── Dividers & Borders & Faint Text ────────────────────────────
+  // Previously low contrast, now 'outline' is prominent enough for text,
+  // while 'outlineVariant' is subtle enough for borders.
+  static Color get outline        => isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+  static Color get outlineVariant => isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1);
+
+  // ── Status ─────────────────────────────────────────────────────
+  static Color get error   => isDark ? const Color(0xFFFF5273) : const Color(0xFFE03131);
+  static Color get onError => const Color(0xFFFFFFFF);
 }
 
 class AppTheme {
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.surface,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.light(
         surface: AppColors.surface,
         primary: AppColors.primary,
         onPrimary: AppColors.onPrimary,
@@ -139,7 +152,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: Color(0xCC0D0B1A),
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.outlineVariant,
@@ -154,6 +167,33 @@ class AppTheme {
           TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
         },
       ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.surface,
+      colorScheme: ColorScheme.dark(
+        surface: AppColors.surface,
+        primary: AppColors.primary,
+        onPrimary: AppColors.onPrimary,
+        secondary: AppColors.secondary,
+        onSecondary: AppColors.onSecondary,
+        tertiary: AppColors.tertiary,
+        onTertiary: AppColors.onTertiary,
+        error: AppColors.error,
+        onSurface: AppColors.onSurface,
+        onSurfaceVariant: AppColors.onSurfaceVariant,
+        outline: AppColors.outline,
+        outlineVariant: AppColors.outlineVariant,
+      ),
+      textTheme: lightTheme.textTheme,
+      cardTheme: lightTheme.cardTheme,
+      inputDecorationTheme: lightTheme.inputDecorationTheme,
+      bottomNavigationBarTheme: lightTheme.bottomNavigationBarTheme,
+      pageTransitionsTheme: lightTheme.pageTransitionsTheme,
     );
   }
 }

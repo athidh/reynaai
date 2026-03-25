@@ -73,7 +73,7 @@ class _NavBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.85),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: const Border(
+            border: Border(
                 top: BorderSide(color: AppColors.primaryContainer, width: 1)),
           ),
           child: Row(
@@ -92,7 +92,7 @@ class _NavBar extends StatelessWidget {
                         size: active ? 22 : 20,
                         color: active ? AppColors.primary : AppColors.outlineVariant,
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3),
                       Text(item.label,
                           style: TextStyle(
                               fontFamily: 'Space Grotesk',
@@ -102,7 +102,7 @@ class _NavBar extends StatelessWidget {
                               color: active
                                   ? AppColors.primary
                                   : AppColors.outlineVariant)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: active ? 16 : 0,

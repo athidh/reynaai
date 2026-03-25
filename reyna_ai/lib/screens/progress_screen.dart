@@ -4,9 +4,9 @@
 // Falls back to static offline data immediately; real plan loads in background.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../theme/app_theme.dart';
 import '../providers/app_state.dart';
-
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
   @override
@@ -128,11 +128,11 @@ class _ProgressScreenState extends State<ProgressScreen>
             // ── Header ───────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('TACTICAL',
+                    Text('TACTICAL',
                         style: TextStyle(
                             fontFamily: 'Space Grotesk',
                             fontSize: 48,
@@ -148,23 +148,47 @@ class _ProgressScreenState extends State<ProgressScreen>
                             letterSpacing: -2,
                             height: 0.9,
                             color: rankColor)),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
-                    // ── Soul Orb + Battle Readiness ─────────────────────
+                    // ── Soul Orb + Battle Readiness (R6) ─────────────────────
                     _SoulOrbCard(
                       animation: _orbPulse,
                       probability: prob,
-                      rank: rank,
+                      rank: state.battleRankBadge, // R8 Badge
                       rankColor: rankColor,
                       streakDays: state.streak,
                       xpGained: state.xpGained,
                       isLive: plan != null,
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
+                    
+                    // ── Analytics Dashboard Chart (R8) ────────────────────────
+                    if (state.engagementTrendData.isNotEmpty) ...[
+                      Text('ENGAGEMENT TREND (7 DAYS)',
+                          style: TextStyle(
+                              fontFamily: 'Space Grotesk',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                              color: AppColors.onSurface)),
+                      SizedBox(height: 16),
+                      Container(
+                        height: 200,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainerHigh,
+                          border: Border.all(color: AppColors.outlineVariant),
+                        ),
+                        child: _EngagementChart(trendData: state.engagementTrendData),
+                      ),
+                      SizedBox(height: 24),
+                    ],
+
+
                     Row(
                       children: [
-                        const Text('⚡ WEEK MILESTONES',
+                        Text('⚡ WEEK MILESTONES',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk',
                                 fontSize: 18,
@@ -174,9 +198,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                         const Spacer(),
                         if (!state.hasVideoPlayed)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             color: AppColors.surfaceContainerHigh,
-                            child: const Text('WATCH A VIDEO TO UNLOCK',
+                            child: Text('WATCH A VIDEO TO UNLOCK',
                                 style: TextStyle(
                                     fontFamily: 'Space Grotesk',
                                     fontSize: 7,
@@ -185,9 +209,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                           )
                         else if (plan != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             color: AppColors.primary.withOpacity(0.1),
-                            child: const Text('AI GENERATED FROM YOUR VIDEO',
+                            child: Text('AI GENERATED FROM YOUR VIDEO',
                                 style: TextStyle(
                                     fontFamily: 'Space Grotesk',
                                     fontSize: 7,
@@ -196,7 +220,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                     color: AppColors.primary)),
                           )
                         else
-                          const Text('OFFLINE MODE',
+                          Text('OFFLINE MODE',
                               style: TextStyle(
                                   fontFamily: 'Space Grotesk',
                                   fontSize: 8,
@@ -204,7 +228,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                   color: AppColors.outline)),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -212,7 +236,7 @@ class _ProgressScreenState extends State<ProgressScreen>
 
             // ── 7-Day Study Planner ───────────────────────────────────────
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 100),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (ctx, i) {
@@ -230,7 +254,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                     final locked = !state.hasVideoPlayed;
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(
                         color: isToday
                             ? rankColor.withOpacity(0.07)
@@ -242,31 +266,31 @@ class _ProgressScreenState extends State<ProgressScreen>
                       ),
                       child: locked
                           ? Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: EdgeInsets.all(16),
                               child: Row(children: [
                                 Container(
                                   width: 36, height: 36,
                                   color: AppColors.surfaceContainerHighest,
                                   child: Center(child: Text('D$dayNum',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontFamily: 'Space Grotesk',
                                           fontSize: 10, fontWeight: FontWeight.w900,
                                           color: AppColors.outlineVariant))),
                                 ),
-                                const SizedBox(width: 12),
-                                const Expanded(child: Text('Watch a video to unlock',
+                                SizedBox(width: 12),
+                                Expanded(child: Text('Watch a video to unlock',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         fontFamily: 'Manrope', fontSize: 12,
                                         color: AppColors.outlineVariant))),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.lock_outline,
+                                SizedBox(width: 8),
+                                Icon(Icons.lock_outline,
                                     color: AppColors.outlineVariant, size: 16),
                               ]),
                             )
                           : Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: EdgeInsets.all(16),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -282,24 +306,24 @@ class _ProgressScreenState extends State<ProgressScreen>
                                             fontSize: 10, fontWeight: FontWeight.w900,
                                             color: isToday ? Colors.white : AppColors.onSurface))),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(children: [
                                           Expanded(child: Text(focus,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                   fontFamily: 'Space Grotesk',
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w700,
                                                   color: AppColors.onSurface))),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
+                                            padding: EdgeInsets.symmetric(
                                                 horizontal: 6, vertical: 2),
                                             color: AppColors.primary.withOpacity(0.1),
                                             child: Text('${mins}min',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     fontFamily: 'Space Grotesk',
                                                     fontSize: 8,
                                                     letterSpacing: 1,
@@ -308,9 +332,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                                           ),
                                         ]),
                                         if (tip.isNotEmpty) ...[
-                                          const SizedBox(height: 4),
+                                          SizedBox(height: 4),
                                           Text(tip,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                   fontFamily: 'Manrope',
                                                   fontSize: 11,
                                                   height: 1.4,
@@ -319,9 +343,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                                               overflow: TextOverflow.ellipsis),
                                         ],
                                         if (isToday) ...[
-                                          const SizedBox(height: 6),
+                                          SizedBox(height: 6),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
+                                            padding: EdgeInsets.symmetric(
                                                 horizontal: 6, vertical: 2),
                                             color: rankColor.withOpacity(0.15),
                                             child: Text('TODAY',
@@ -375,12 +399,17 @@ class _SoulOrbCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pct = (probability * 100).round();
+    
+    // R6 Probability Thresholds
+    final Color orbColor = probability > 0.75 
+        ? Colors.green 
+        : (probability < 0.50 ? Colors.amber : rankColor);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh,
-        border: Border(left: BorderSide(color: rankColor, width: 4)),
+        border: Border(left: BorderSide(color: orbColor, width: 4)),
       ),
       child: Row(
         children: [
@@ -393,28 +422,28 @@ class _SoulOrbCard extends StatelessWidget {
                 width: 72, height: 72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: rankColor.withOpacity(0.15),
-                  border: Border.all(color: rankColor, width: 2),
+                  color: orbColor.withOpacity(0.15),
+                  border: Border.all(color: orbColor, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: rankColor.withOpacity(0.4 * animation.value),
+                      color: orbColor.withOpacity(0.4 * animation.value),
                       blurRadius: 20 * animation.value,
                       spreadRadius: 4 * animation.value,
                     ),
                   ],
                 ),
                 child: Center(
-                  child: Text(rank[0],
+                  child: Text(rank[0].toUpperCase(),
                       style: TextStyle(
                           fontFamily: 'Space Grotesk',
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
-                          color: rankColor)),
+                          color: orbColor)),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,11 +457,11 @@ class _SoulOrbCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: rankColor)),
                   if (isLive) ...[
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       color: AppColors.primary.withOpacity(0.1),
-                      child: const Text('LIVE',
+                      child: Text('LIVE',
                           style: TextStyle(
                               fontFamily: 'Space Grotesk',
                               fontSize: 7,
@@ -442,30 +471,30 @@ class _SoulOrbCard extends StatelessWidget {
                     ),
                   ],
                 ]),
-                const SizedBox(height: 4),
-                const Text('BATTLE READINESS',
+                SizedBox(height: 4),
+                Text('BATTLE READINESS',
                     style: TextStyle(
                         fontFamily: 'Space Grotesk',
                         fontSize: 8,
                         letterSpacing: 2,
                         color: AppColors.outline)),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 // Progress bar
                 ClipRect(
                   child: SizedBox(
                     height: 6,
                     child: Row(children: [
-                      Flexible(flex: pct,       child: Container(color: rankColor)),
+                      Flexible(flex: pct,       child: Container(color: orbColor)),
                       Flexible(flex: 100 - pct, child: Container(color: AppColors.surfaceContainerHighest)),
                     ]),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                    '$pct% promotion chance  •  ${streakDays}d streak',
                    maxLines: 2,
                    overflow: TextOverflow.ellipsis,
-                   style: const TextStyle(
+                   style: TextStyle(
                        fontFamily: 'Manrope',
                        fontSize: 10,
                        height: 1.4,
@@ -532,7 +561,7 @@ class _WeekMilestone extends StatelessWidget {
                   ),
                   child: Center(
                     child: isCompleted
-                        ? const Icon(Icons.check, color: Colors.white, size: 16)
+                        ? Icon(Icons.check, color: Colors.white, size: 16)
                         : Text('${index + 1}',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk',
@@ -545,7 +574,7 @@ class _WeekMilestone extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      margin: EdgeInsets.symmetric(vertical: 4),
                       color: isCompleted
                           ? const Color(0xFF4CAF50)
                           : AppColors.surfaceContainerHighest,
@@ -554,7 +583,7 @@ class _WeekMilestone extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           // Content
           Expanded(
             child: Container(
@@ -569,17 +598,17 @@ class _WeekMilestone extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
                           color: accentColor)),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(goal,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 12,
                           color: AppColors.onSurfaceVariant)),
                   if (isActive && days.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     ...days.take(2).map((day) => _DayTile(day: day)),
                   ],
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                 ],
               ),
             ),
@@ -597,38 +626,38 @@ class _DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(10),
+      margin: EdgeInsets.only(bottom: 6),
+      padding: EdgeInsets.all(10),
       color: AppColors.surfaceContainerHigh,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
             Text('DAY ${day['day'] ?? '—'}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 8,
                     letterSpacing: 1.5,
                     color: AppColors.outline)),
             const Spacer(),
             Text('${day['daily_minutes'] ?? 0} min',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 8,
                     letterSpacing: 1,
                     color: AppColors.primary)),
           ]),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(day['focus'] ?? '',
-              style: const TextStyle(
+              style: TextStyle(
                   fontFamily: 'Space Grotesk',
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: AppColors.onSurface)),
           if (day['tip'] != null) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text('💡 ${day['tip']}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 10,
                     color: AppColors.onSurfaceVariant),
@@ -636,6 +665,124 @@ class _DayTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis),
           ],
         ],
+      ),
+    );
+  }
+}
+
+// ── Engagement Chart (R8) ──────────────────────────────────────────────────
+class _EngagementChart extends StatelessWidget {
+  final List<Map<String, dynamic>> trendData;
+  const _EngagementChart({required this.trendData});
+
+  @override
+  Widget build(BuildContext context) {
+    if (trendData.isEmpty) return const SizedBox.shrink();
+
+    final maxScore = trendData
+        .map((e) => (e['score'] as num?)?.toDouble() ?? 0.0)
+        .fold<double>(0.0, (m, v) => v > m ? v : m);
+    
+    final maxY = maxScore > 10 ? maxScore * 1.2 : 10.0;
+
+    final spots = trendData.asMap().entries.map((e) {
+      final score = (e.value['score'] as num?)?.toDouble() ?? 0.0;
+      return FlSpot(e.key.toDouble(), score);
+    }).toList();
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: maxY / 4,
+          getDrawingHorizontalLine: (value) {
+            return FlLine(
+              color: AppColors.outlineVariant.withOpacity(0.5),
+              strokeWidth: 1,
+            );
+          },
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                final idx = value.toInt();
+                if (idx < 0 || idx >= trendData.length) return const SizedBox.shrink();
+                final dateStr = trendData[idx]['date'] as String?;
+                if (dateStr == null || dateStr.length < 10) return const SizedBox.shrink();
+                // Extract "MM-DD" from "YYYY-MM-DD"
+                final display = dateStr.substring(5, 10);
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(display,
+                      style: TextStyle(
+                          color: AppColors.outline,
+                          fontSize: 9,
+                          fontFamily: 'Space Grotesk')),
+                );
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: maxY / 4,
+              reservedSize: 28,
+              getTitlesWidget: (value, meta) {
+                if (value == 0) return const SizedBox.shrink();
+                return Text(value.toInt().toString(),
+                    style: TextStyle(
+                        color: AppColors.outline,
+                        fontSize: 9,
+                        fontFamily: 'Space Grotesk'));
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        minX: 0,
+        maxX: (trendData.length - 1).toDouble(),
+        minY: 0,
+        maxY: maxY,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            color: AppColors.primary,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColors.primary.withOpacity(0.1),
+            ),
+          ),
+        ],
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => AppColors.surface,
+            tooltipBorder: BorderSide(color: AppColors.outlineVariant),
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                return LineTooltipItem(
+                  spot.y.toStringAsFixed(1),
+                  TextStyle(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Space Grotesk',
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
       ),
     );
   }

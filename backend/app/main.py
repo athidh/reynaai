@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.db import init_db
-from app.api import auth, scraper, tracker, tutor
+from app.api import auth, scraper, tracker, tutor, analytics, voice
 
 
 @asynccontextmanager
@@ -43,6 +43,9 @@ app.include_router(auth.router)
 app.include_router(scraper.router)
 app.include_router(tracker.router)
 app.include_router(tutor.router)
+app.include_router(voice.router)
+# R8 Analytics feature
+app.include_router(analytics.router, prefix="/api/v1")
 
 
 @app.get("/", tags=["health"])

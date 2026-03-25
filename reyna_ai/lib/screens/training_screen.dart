@@ -248,7 +248,7 @@ class _TrainingScreenState extends State<TrainingScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
+          content: Text(
             '✅ Mission Complete! Flashcards generating in Arena...',
             style: TextStyle(fontFamily: 'Space Grotesk'),
           ),
@@ -320,12 +320,12 @@ class _TrainingScreenState extends State<TrainingScreen>
               children: [
                 // ── Header ────────────────────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Row(
                     children: [
                       Container(width: 4, height: 52, color: AppColors.primary),
-                      const SizedBox(width: 14),
-                      const Expanded(
+                      SizedBox(width: 14),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -349,23 +349,23 @@ class _TrainingScreenState extends State<TrainingScreen>
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 // ── Success Probability Display ──────────────────────────────
                 if (_successProbability != null)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 20),
                     child: _SuccessProbabilityBar(
                       probability: _successProbability!,
                       rank: _previousRank ?? _probabilityToRank(_successProbability!),
                     ),
                   ),
 
-                if (_successProbability != null) const SizedBox(height: 12),
+                if (_successProbability != null) SizedBox(height: 12),
 
                 // ── Search bar ────────────────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerHigh,
@@ -377,13 +377,13 @@ class _TrainingScreenState extends State<TrainingScreen>
                         Expanded(
                           child: TextField(
                             controller: _queryCtrl,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Space Grotesk',
                                 color: AppColors.onSurface,
                                 fontSize: 13,
                                 letterSpacing: 0.5),
                             cursorColor: AppColors.primary,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: 'Enter topic or paste YouTube URL...',
                               hintStyle: TextStyle(
                                   fontFamily: 'Space Grotesk',
@@ -403,13 +403,13 @@ class _TrainingScreenState extends State<TrainingScreen>
                             height: 50,
                             color: AppColors.primary,
                             child: _loading
-                                ? const Center(
+                                ? Center(
                                     child: SizedBox.square(
                                       dimension: 18,
                                       child: CircularProgressIndicator(
                                           color: Colors.white, strokeWidth: 2),
                                     ))
-                                : const Icon(Icons.bolt,
+                                : Icon(Icons.bolt,
                                     color: AppColors.onPrimary, size: 22),
                           ),
                         ),
@@ -420,15 +420,15 @@ class _TrainingScreenState extends State<TrainingScreen>
 
                 if (_errorMsg != null)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
                     child: Text(_errorMsg!,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontFamily: 'Space Grotesk',
                             fontSize: 11,
                             color: AppColors.error)),
                   ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 // ── Player or empty state ─────────────────────────────────────
                 Expanded(
@@ -441,7 +441,7 @@ class _TrainingScreenState extends State<TrainingScreen>
                                 controller: _ytCtrl!,
                                 showVideoProgressIndicator: true,
                                 progressIndicatorColor: AppColors.primary,
-                                progressColors: const ProgressBarColors(
+                                progressColors: ProgressBarColors(
                                   playedColor: AppColors.primary,
                                   handleColor: AppColors.primary,
                                   bufferedColor: AppColors.primaryContainer,
@@ -452,7 +452,7 @@ class _TrainingScreenState extends State<TrainingScreen>
                               builder: (ctx, player) => player,
                             ),
 
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
 
                             _EventBar(
                               videoId: _videoId ?? '',
@@ -492,18 +492,18 @@ class _EmptyState extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.primaryContainer, width: 2),
             ),
-            child: const Icon(Icons.play_arrow_outlined,
+            child: Icon(Icons.play_arrow_outlined,
                 color: AppColors.primary, size: 32),
           ),
-          const SizedBox(height: 16),
-          const Text('AWAITING TARGET',
+          SizedBox(height: 16),
+          Text('AWAITING TARGET',
               style: TextStyle(
                   fontFamily: 'Space Grotesk',
                   fontSize: 12,
                   letterSpacing: 3,
                   color: AppColors.outline)),
-          const SizedBox(height: 6),
-          const Text('Enter a topic or paste YouTube URL above',
+          SizedBox(height: 6),
+          Text('Enter a topic or paste YouTube URL above',
               style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 12,
@@ -545,7 +545,7 @@ class _SuccessProbabilityBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final percentage = (probability * 100).round();
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh,
         border: Border(left: BorderSide(color: _barColor, width: 3)),
@@ -555,7 +555,7 @@ class _SuccessProbabilityBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('BATTLE READINESS',
+              Text('BATTLE READINESS',
                   style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 8,
@@ -565,7 +565,7 @@ class _SuccessProbabilityBar extends StatelessWidget {
                   )),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 color: _rankColor.withOpacity(0.12),
                 child: Text(rank,
                     style: TextStyle(
@@ -578,7 +578,7 @@ class _SuccessProbabilityBar extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '$percentage% Chance of Promotion',
             style: TextStyle(
@@ -588,7 +588,7 @@ class _SuccessProbabilityBar extends StatelessWidget {
               color: _barColor,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ClipRect(
             child: SizedBox(
               height: 4,
@@ -627,10 +627,10 @@ class _EventBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: const BoxDecoration(
+        padding: EdgeInsets.all(14),
+        decoration: BoxDecoration(
           color: AppColors.surfaceContainerHigh,
           border: Border(
             left: BorderSide(color: AppColors.primary, width: 3),
@@ -641,7 +641,7 @@ class _EventBar extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text('ENGAGEMENT TRACKER',
+                Text('ENGAGEMENT TRACKER',
                     style: TextStyle(
                       fontFamily: 'Space Grotesk',
                       fontSize: 8,
@@ -652,9 +652,9 @@ class _EventBar extends StatelessWidget {
                 const Spacer(),
                 if (hasTranscript)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     color: AppColors.primary.withOpacity(0.1),
-                    child: const Text('TRANSCRIPT READY',
+                    child: Text('TRANSCRIPT READY',
                         style: TextStyle(
                           fontFamily: 'Space Grotesk',
                           fontSize: 7,
@@ -665,27 +665,27 @@ class _EventBar extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               'VIDEO ID: ${videoId.isEmpty ? '—' : videoId}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Space Grotesk',
                 fontSize: 11,
                 color: AppColors.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text(
               'Heartbeats sent: $heartbeatCount (every 30s, sum_click: 5)',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 11,
                 color: AppColors.outlineVariant,
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 2),
-            const Text(
+            SizedBox(height: 2),
+            Text(
               'Events auto-logged to Reyna for ML analysis. Flashcards generated on video end.',
               style: TextStyle(
                 fontFamily: 'Manrope',
@@ -735,7 +735,7 @@ class _LevelUpOverlay extends StatelessWidget {
               child: Opacity(
                 opacity: animation.value,
                 child: Container(
-                  padding: const EdgeInsets.all(32),
+                  padding: EdgeInsets.all(32),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceContainerHigh,
                     border: Border.all(color: _rankColor, width: 3),
@@ -751,8 +751,8 @@ class _LevelUpOverlay extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.arrow_upward_rounded, color: _rankColor, size: 48),
-                      const SizedBox(height: 16),
-                      const Text('RANK UP!',
+                      SizedBox(height: 16),
+                      Text('RANK UP!',
                           style: TextStyle(
                             fontFamily: 'Space Grotesk',
                             fontSize: 32,
@@ -760,7 +760,7 @@ class _LevelUpOverlay extends StatelessWidget {
                             letterSpacing: -1,
                             color: AppColors.onSurface,
                           )),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(rank,
                           style: TextStyle(
                             fontFamily: 'Space Grotesk',
@@ -769,8 +769,8 @@ class _LevelUpOverlay extends StatelessWidget {
                             letterSpacing: 3,
                             color: _rankColor,
                           )),
-                      const SizedBox(height: 16),
-                      const Text('Your performance is improving!',
+                      SizedBox(height: 16),
+                      Text('Your performance is improving!',
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 14,

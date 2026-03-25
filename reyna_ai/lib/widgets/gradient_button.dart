@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class GradientButton extends StatelessWidget {
-  final String label;
+  final String text;
   final VoidCallback? onTap;
   final bool isLoading;
   
   const GradientButton({
     super.key, 
-    required this.label, 
+    required this.text, 
     required this.onTap,
     this.isLoading = false,
   });
@@ -48,8 +48,8 @@ class GradientButton extends StatelessWidget {
                 ),
               )
             : Text(
-                label,
-                style: const TextStyle(
+                text,
+                style: TextStyle(
                   fontFamily: 'Space Grotesk',
                   fontSize: 14,
                   fontWeight: FontWeight.w900,

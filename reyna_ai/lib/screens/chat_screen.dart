@@ -1,10 +1,17 @@
 // lib/screens/chat_screen.dart
 //
-// Command Center — Real-time Reyna chatroom
-// POSTs to /tutor/chat with the user's last video transcript
-// and domain as context for grounded Socratic responses.
+// Command Center — Real-time Reyna chatroom with Sentience Voice Layer
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:record/record.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:audioplayers/audioplayers.dart';
+
 import '../theme/app_theme.dart';
 import '../providers/app_state.dart';
 import '../services/api_service.dart';
@@ -19,19 +26,22 @@ class _ChatScreenState extends State<ChatScreen> {
   final _msgCtrl = TextEditingController();
   final _scroll  = ScrollController();
   final List<_Msg> _messages = [];
-  // LLM conversation history — sent to backend so Reyna remembers context
   final List<Map<String, String>> _history = [];
   bool _isTyping = false;
+
+  // ── Sentience Layer (Voice) State ──
+  final _audioRecorder = AudioRecorder();
+  final _audioPlayer = AudioPlayer();
+  WebSocketChannel? _channel;
+  bool _isRecording = false;
 
   @override
   void initState() {
     super.initState();
-    // Initial greeting from Reyna
     _messages.add(const _Msg(
       isReyna: true,
       text: 'OPERATIVE — I am REYNA. Your combat AI instructor.\n\n'
-          'Watch a video in the Training Arena and I will brief you with '
-          'Socratic questions drawn directly from the transcript.\n\n'
+          'Use text or VOICE transmission. I analyze latency, context, and combat readiness to customize your Socratic feedback.\n\n'
           'What is your mission today?',
     ));
   }
@@ -40,9 +50,13 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _msgCtrl.dispose();
     _scroll.dispose();
+    _audioRecorder.dispose();
+    _audioPlayer.dispose();
+    _channel?.sink.close();
     super.dispose();
   }
 
+  // ── Text Input ────────────────────────────────────────────────────────────
   Future<void> _sendMessage() async {
     final text = _msgCtrl.text.trim();
     if (text.isEmpty) return;
@@ -60,20 +74,10 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final token = state.token;
       if (token == null || token == 'mock_token') {
-        // Offline fallback
-        await Future.delayed(const Duration(milliseconds: 800));
-        setState(() {
-          _messages.add(_Msg(
-            isReyna: true,
-            text: 'Authenticate with the backend to receive full combat intelligence, operative. '
-                  'For now: "${text.length > 30 ? text.substring(0, 30) : text}..." — stay focused on fundamentals.',
-          ));
-          _isTyping = false;
-        });
+        _simulatedFallback(text);
         return;
       }
 
-      // Add user turn to history
       _history.add({'role': 'user', 'content': text});
 
       final data = await ApiService.chatWithReyna(
@@ -81,13 +85,12 @@ class _ChatScreenState extends State<ChatScreen> {
         message: text,
         transcriptContext: state.lastVideoTranscript,
         domain: state.domainInterest ?? '',
-        history: List.from(_history), // snapshot of history so far
+        history: List.from(_history),
       );
 
       final reply = (data['reply'] as String?) ?? 'Processing...';
       final combatStatus = data['combat_status'] as String?;
 
-      // Add assistant reply to history for next turn
       _history.add({'role': 'assistant', 'content': reply});
 
       if (mounted) {
@@ -102,15 +105,122 @@ class _ChatScreenState extends State<ChatScreen> {
         _scrollToBottom();
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _messages.add(_Msg(
-            isReyna: true,
-            text: 'Signal disrupted. Retry your transmission, operative.',
-          ));
-          _isTyping = false;
-        });
+      _handleNetError();
+    }
+  }
+
+  // ── Voice Input (Sentience Layer) ──────────────────────────────────────────
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      // Stop and Send
+      setState(() => _isRecording = false);
+      final path = await _audioRecorder.stop();
+      if (path != null) {
+        final bytes = await File(path).readAsBytes();
+        _sendVoiceMessage(bytes);
       }
+    } else {
+      // Start
+      if (await _audioRecorder.hasPermission()) {
+        final dir = await getTemporaryDirectory();
+        final path = '${dir.path}/reyna_mic.m4a';
+        await _audioRecorder.start(
+          const RecordConfig(encoder: AudioEncoder.aacLc),
+          path: path,
+        );
+        setState(() => _isRecording = true);
+      }
+    }
+  }
+
+  void _sendVoiceMessage(Uint8List audioBytes) {
+    final state = context.read<AppState>();
+    final token = state.token ?? '';
+    
+    if (token.isEmpty || token == 'mock_token') {
+      _simulatedFallback("Voice transmission captured.");
+      return;
+    }
+
+    setState(() => _isTyping = true);
+    _scrollToBottom();
+
+    final wsUrl = ApiService.baseUrl.replaceFirst(RegExp(r'^http'), 'ws');
+    _channel?.sink.close();
+    _channel = WebSocketChannel.connect(Uri.parse('$wsUrl/ws/reyna/chat?token=$token'));
+
+    _channel!.stream.listen(
+      (message) {
+        if (message is String) {
+          try {
+            final data = jsonDecode(message);
+            final event = data['event'];
+            
+            if (event == 'transcription') {
+              final text = data['text'] as String;
+              setState(() {
+                _messages.add(_Msg(isReyna: false, text: text, isVoice: true));
+                _history.add({'role': 'user', 'content': text});
+              });
+              _scrollToBottom();
+            } else if (event == 'reyna_response') {
+              final text = data['text'] as String;
+              setState(() {
+                _messages.add(_Msg(isReyna: true, text: text, isVoice: true));
+                _history.add({'role': 'assistant', 'content': text});
+                _isTyping = false;
+              });
+              _scrollToBottom();
+            } else if (event == 'audio_done') {
+              _channel?.sink.close();
+            }
+          } catch (e) {
+            debugPrint('WS Parse Error: $e');
+          }
+        } else if (message is Uint8List) {
+          // Play incoming ElevenLabs synthesized bytes
+          // Note: using BytesSource in audioplayers for immediate playback of the TTS chunk
+          _audioPlayer.play(BytesSource(message));
+        }
+      },
+      onError: (e) {
+        debugPrint('WS Error: $e');
+        _handleNetError();
+      },
+      onDone: () {
+        if (mounted) setState(() => _isTyping = false);
+      }
+    );
+
+    // Stream out binary microphone capture then notify EOF
+    _channel!.sink.add(audioBytes);
+    _channel!.sink.add(jsonEncode({"event": "end_of_speech"}));
+  }
+
+  // ── Utils ───────────────────────────────────────────────────────────────────
+  Future<void> _simulatedFallback(String text) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (mounted) {
+      setState(() {
+        _messages.add(_Msg(
+          isReyna: true,
+          text: 'Authenticate with the backend to receive full combat intelligence, operative. '
+                'For now: "${text.length > 30 ? text.substring(0, 30) : text}..." — stay focused on fundamentals.',
+        ));
+        _isTyping = false;
+      });
+    }
+  }
+
+  void _handleNetError() {
+    if (mounted) {
+      setState(() {
+        _messages.add(const _Msg(
+          isReyna: true,
+          text: 'Signal disrupted. Retry your transmission, operative.',
+        ));
+        _isTyping = false;
+      });
     }
   }
 
@@ -137,67 +247,42 @@ class _ChatScreenState extends State<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ───────────────────────────────────────────────────
+            // Header
             Container(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              decoration: const BoxDecoration(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+              decoration: BoxDecoration(
                 color: AppColors.surfaceContainerHigh,
-                border: Border(
-                    bottom: BorderSide(color: AppColors.primaryContainer, width: 1)),
+                border: Border(bottom: BorderSide(color: AppColors.primaryContainer, width: 1)),
               ),
               child: Row(
                 children: [
                   Container(width: 4, height: 44, color: AppColors.primary),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('COMMAND CENTER',
-                            style: TextStyle(
-                                fontFamily: 'Space Grotesk',
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
-                                color: AppColors.onSurface)),
-                        Text(
-                          'REYNA AI  •  $domain',
-                          style: const TextStyle(
-                              fontFamily: 'Space Grotesk',
-                              fontSize: 8,
-                              letterSpacing: 2,
-                              color: AppColors.outline),
-                        ),
+                        Text('COMMAND CENTER',
+                            style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5, color: AppColors.onSurface)),
+                        Text('REYNA AI  •  $domain',
+                            style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 8, letterSpacing: 2, color: AppColors.outline)),
                       ],
                     ),
                   ),
-                  // Transcript context badge
                   if (hasTranscript)
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.1),
-                        border: Border.all(
-                            color: AppColors.primary.withOpacity(0.4)),
+                        border: Border.all(color: AppColors.primary.withOpacity(0.4)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            width: 5, height: 5,
-                            decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle),
-                          ),
-                          const SizedBox(width: 4),
-                          const Text('LIVE CONTEXT',
-                              style: TextStyle(
-                                  fontFamily: 'Space Grotesk',
-                                  fontSize: 7,
-                                  letterSpacing: 1,
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w700)),
+                          Container(width: 5, height: 5, decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+                          SizedBox(width: 4),
+                          Text('LIVE CONTEXT',
+                              style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 7, letterSpacing: 1, color: AppColors.primary, fontWeight: FontWeight.w700)),
                         ],
                       ),
                     ),
@@ -205,64 +290,74 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
 
-            // ── Chat messages ────────────────────────────────────────────
+            // Messages
             Expanded(
               child: ListView.builder(
                 controller: _scroll,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
                 itemCount: _messages.length + (_isTyping ? 1 : 0),
                 itemBuilder: (ctx, i) {
-                  if (_isTyping && i == _messages.length) {
-                    return _TypingBubble();
-                  }
+                  if (_isTyping && i == _messages.length) return _TypingBubble(isVoice: _isRecording);
                   return _ChatBubble(msg: _messages[i]);
                 },
               ),
             ),
 
-            // ── Input bar ─────────────────────────────────────────────────
+            // Input Bar
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              decoration: const BoxDecoration(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+              decoration: BoxDecoration(
                 color: AppColors.surfaceContainerHigh,
-                border: Border(
-                    top: BorderSide(color: AppColors.primaryContainer, width: 1)),
+                border: Border(top: BorderSide(color: AppColors.primaryContainer, width: 1)),
               ),
               child: Row(
                 children: [
+                  // Mic Button
+                  GestureDetector(
+                    onTap: _toggleRecording,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: _isRecording ? Colors.red.withOpacity(0.15) : AppColors.surfaceContainerHighest,
+                        border: Border.all(color: _isRecording ? Colors.red : AppColors.primaryContainer, width: _isRecording ? 2 : 1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isRecording ? Icons.stop : Icons.mic,
+                        color: _isRecording ? Colors.red : AppColors.outlineVariant,
+                        size: 20
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+
+                  // Text Field
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.surfaceContainerHighest,
-                        border: Border.all(
-                            color: AppColors.primaryContainer, width: 1),
+                        border: Border.all(color: AppColors.primaryContainer, width: 1),
                       ),
                       child: TextField(
                         controller: _msgCtrl,
-                        style: const TextStyle(
-                            fontFamily: 'Space Grotesk',
-                            color: AppColors.onSurface,
-                            fontSize: 13),
+                        style: TextStyle(fontFamily: 'Space Grotesk', color: AppColors.onSurface, fontSize: 13),
                         cursorColor: AppColors.primary,
                         maxLines: 3,
                         minLines: 1,
                         decoration: InputDecoration(
-                          hintText: hasTranscript
-                              ? 'Ask Reyna about the video...'
-                              : 'Ask Reyna anything...',
-                          hintStyle: const TextStyle(
-                              fontFamily: 'Space Grotesk',
-                              color: AppColors.outlineVariant,
-                              fontSize: 12),
+                          hintText: _isRecording ? 'Listening...' : (hasTranscript ? 'Ask Reyna about the video...' : 'Ask Reyna anything...'),
+                          hintStyle: TextStyle(fontFamily: 'Space Grotesk', color: _isRecording ? Colors.red : AppColors.outlineVariant, fontSize: 12),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         ),
                         onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
+
+                  // Send Button
                   GestureDetector(
                     onTap: _isTyping ? null : _sendMessage,
                     child: Container(
@@ -270,14 +365,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       height: 48,
                       color: _isTyping ? AppColors.outline : AppColors.primary,
                       child: _isTyping
-                          ? const Center(
-                              child: SizedBox.square(
-                                dimension: 16,
-                                child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2),
-                              ))
-                          : const Icon(Icons.send,
-                              color: AppColors.onPrimary, size: 20),
+                          ? Center(child: SizedBox.square(dimension: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                          : Icon(Icons.send, color: AppColors.onPrimary, size: 20),
                     ),
                   ),
                 ],
@@ -290,15 +379,17 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-// ── Message model ─────────────────────────────────────────────────────────────
+// ── Message Model ─────────────────────────────────────────────────────────────
 class _Msg {
   final bool isReyna;
   final String text;
   final String? combatStatus;
+  final bool isVoice;
   const _Msg({
     required this.isReyna,
     required this.text,
     this.combatStatus,
+    this.isVoice = false,
   });
 }
 
@@ -316,92 +407,75 @@ Color _combatStatusColor(String? status) {
   }
 }
 
-// ── Chat bubble ───────────────────────────────────────────────────────────────
+// ── Chat Bubble ───────────────────────────────────────────────────────────────
 class _ChatBubble extends StatelessWidget {
   final _Msg msg;
   const _ChatBubble({required this.msg});
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = msg.isReyna
-        ? _combatStatusColor(msg.combatStatus)
-        : AppColors.tertiary;
+    final accentColor = msg.isReyna ? _combatStatusColor(msg.combatStatus) : AppColors.tertiary;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment:
-            msg.isReyna ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment: msg.isReyna ? MainAxisAlignment.start : MainAxisAlignment.end,
         children: [
           if (msg.isReyna) ...[
-            // Avatar
             Container(
-              width: 32,
-              height: 32,
+              width: 32, height: 32,
               color: accentColor.withOpacity(0.15),
-              child: Center(
-                child: Text('R',
-                    style: TextStyle(
-                        fontFamily: 'Space Grotesk',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: accentColor)),
-              ),
+              child: Center(child: Text('R', style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: FontWeight.w900, color: accentColor))),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: msg.isReyna
-                  ? CrossAxisAlignment.start
-                  : CrossAxisAlignment.end,
+              crossAxisAlignment: msg.isReyna ? CrossAxisAlignment.start : CrossAxisAlignment.end,
               children: [
                 if (msg.isReyna && msg.combatStatus != null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(msg.combatStatus!,
-                        style: TextStyle(
-                            fontFamily: 'Space Grotesk',
-                            fontSize: 7,
-                            letterSpacing: 1.5,
-                            fontWeight: FontWeight.w700,
-                            color: accentColor)),
+                    padding: EdgeInsets.only(bottom: 4),
+                    child: Text(msg.combatStatus!, style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 7, letterSpacing: 1.5, fontWeight: FontWeight.w700, color: accentColor)),
                   ),
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: msg.isReyna
-                        ? AppColors.surfaceContainerHigh
-                        : AppColors.primary.withOpacity(0.12),
-                    border: msg.isReyna
-                        ? Border(
-                            left: BorderSide(color: accentColor, width: 3))
-                        : Border.all(
-                            color: AppColors.tertiary.withOpacity(0.3)),
+                    color: msg.isReyna ? AppColors.surfaceContainerHigh : AppColors.primary.withOpacity(0.12),
+                    border: msg.isReyna ? Border(left: BorderSide(color: accentColor, width: 3)) : Border.all(color: AppColors.tertiary.withOpacity(0.3)),
                   ),
-                  child: Text(
-                    msg.text,
-                    style: TextStyle(
-                        fontFamily: msg.isReyna ? 'Manrope' : 'Space Grotesk',
-                        fontSize: 13,
-                        height: 1.5,
-                        fontWeight:
-                            msg.isReyna ? FontWeight.w400 : FontWeight.w600,
-                        color: AppColors.onSurface),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (msg.isVoice)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.mic, size: 12, color: msg.isReyna ? accentColor : AppColors.tertiary),
+                              SizedBox(width: 4),
+                              Text('VOICE TRANSMISSION', style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 7, letterSpacing: 1, color: msg.isReyna ? accentColor : AppColors.tertiary, fontWeight: FontWeight.w900)),
+                            ],
+                          ),
+                        ),
+                      Text(
+                        msg.text,
+                        style: TextStyle(fontFamily: msg.isReyna ? 'Manrope' : 'Space Grotesk', fontSize: 13, height: 1.5, fontWeight: msg.isReyna ? FontWeight.w400 : FontWeight.w600, color: AppColors.onSurface),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
           if (!msg.isReyna) ...[
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Container(
-              width: 32,
-              height: 32,
+              width: 32, height: 32,
               color: AppColors.tertiary.withOpacity(0.1),
-              child: const Icon(Icons.person_outline,
-                  color: AppColors.tertiary, size: 18),
+              child: Icon(Icons.person_outline, color: AppColors.tertiary, size: 18),
             ),
           ],
         ],
@@ -410,50 +484,35 @@ class _ChatBubble extends StatelessWidget {
   }
 }
 
-// ── Typing indicator ──────────────────────────────────────────────────────────
+// ── Typing Indicator ──────────────────────────────────────────────────────────
 class _TypingBubble extends StatelessWidget {
+  final bool isVoice;
+  const _TypingBubble({this.isVoice = false});
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 32, height: 32,
             color: AppColors.primary.withOpacity(0.15),
-            child: Center(
-              child: Text('R',
-                  style: const TextStyle(
-                      fontFamily: 'Space Grotesk',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.primary)),
-            ),
+            child: Center(child: Text('R', style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.primary))),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
               color: AppColors.surfaceContainerHigh,
-              border: Border(
-                  left: BorderSide(color: AppColors.primary, width: 3)),
+              border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('ANALYZING',
-                    style: TextStyle(
-                        fontFamily: 'Space Grotesk',
-                        fontSize: 9,
-                        letterSpacing: 2,
-                        color: AppColors.outline)),
-                const SizedBox(width: 8),
-                SizedBox.square(
-                  dimension: 12,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 1.5, color: AppColors.primary),
-                ),
+                Text(isVoice ? 'TRANSCRIBING/THINKING' : 'ANALYZING', style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 9, letterSpacing: 2, color: AppColors.outline)),
+                SizedBox(width: 8),
+                SizedBox.square(dimension: 12, child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.primary)),
               ],
             ),
           ),

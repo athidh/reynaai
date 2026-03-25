@@ -103,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(state.errorMessage!,
-              style: const TextStyle(fontFamily: 'Space Grotesk')),
+              style: TextStyle(fontFamily: 'Space Grotesk')),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -124,14 +124,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           children: [
             // ── Top progress strip ────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Step dots
                   Row(
                     children: List.generate(4, (i) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: EdgeInsets.only(right: 8),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         width: i == _step ? 28 : 8,
@@ -146,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     )),
                     mainAxisAlignment: MainAxisAlignment.start,
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Text(
                     _step == 0
                         ? 'OPERATIVE\nDESIGNATION'
@@ -164,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       color: AppColors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     _step == 0
                         ? 'What should Reyna call you?'
@@ -173,7 +173,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             : _step == 2
                                 ? 'Your highest education level helps tailor content.'
                                 : 'Choose your primary study domain.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 13,
                       color: AppColors.onSurfaceVariant,
@@ -184,14 +184,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
 
             // ── Step content ──────────────────────────────────────────────
             Expanded(
               child: SlideTransition(
                 position: _slideAnim,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: _step == 0
                       ? _nameStep()
                       : _step == 1
@@ -205,7 +205,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
             // ── CTA button ────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              padding: EdgeInsets.fromLTRB(24, 16, 24, 32),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -226,7 +226,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             ))
                         : Text(
                             _step < 3 ? 'NEXT →' : 'INITIALIZE PROTOCOL',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Space Grotesk',
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
@@ -248,11 +248,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('YOUR NAME', style: TextStyle(
+        Text('YOUR NAME', style: TextStyle(
             fontFamily: 'Space Grotesk', fontSize: 9,
             letterSpacing: 3, color: AppColors.primary,
             fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
             color: AppColors.surfaceContainerHigh,
@@ -262,12 +262,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             controller: _nameCtrl,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            style: const TextStyle(
+            style: TextStyle(
                 fontFamily: 'Space Grotesk', fontSize: 22,
                 fontWeight: FontWeight.w800, color: AppColors.onSurface,
                 letterSpacing: -0.5),
             cursorColor: AppColors.primary,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'e.g. ATHIDH',
               hintStyle: TextStyle(
                   fontFamily: 'Space Grotesk', fontSize: 22,
@@ -287,19 +287,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('AGE BRACKET', style: TextStyle(
+        Text('AGE BRACKET', style: TextStyle(
             fontFamily: 'Space Grotesk', fontSize: 9,
             letterSpacing: 3, color: AppColors.primary,
             fontWeight: FontWeight.w700)),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         ..._ageBands.map((band) {
           final selected = _ageBand == band;
           return GestureDetector(
             onTap: () => setState(() => _ageBand = band),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(20),
+              margin: EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: selected
                     ? AppColors.primary.withOpacity(0.10)
@@ -314,7 +314,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   Icon(Icons.person_outline,
                       color: selected ? AppColors.primary : AppColors.outline,
                       size: 24),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Expanded(
                     child: Text(band,
                         style: TextStyle(
@@ -327,16 +327,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 : AppColors.onSurface)),
                   ),
                   if (selected)
-                    const Icon(Icons.check, color: AppColors.primary, size: 18),
+                    Icon(Icons.check, color: AppColors.primary, size: 18),
                 ],
               ),
             ),
           );
         }).toList(),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         GestureDetector(
           onTap: _nextStep,
-          child: const Text('SKIP →',
+          child: Text('SKIP →',
               style: TextStyle(fontFamily: 'Space Grotesk',
                   fontSize: 10, letterSpacing: 2,
                   color: AppColors.outline,
@@ -350,19 +350,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('EDUCATION LEVEL', style: TextStyle(
+        Text('EDUCATION LEVEL', style: TextStyle(
             fontFamily: 'Space Grotesk', fontSize: 9,
             letterSpacing: 3, color: AppColors.primary,
             fontWeight: FontWeight.w700)),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         ..._educationLevels.map((level) {
           final selected = _education == level;
           return GestureDetector(
             onTap: () => setState(() => _education = level),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+              margin: EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: selected
                     ? AppColors.primary.withOpacity(0.10)
@@ -377,7 +377,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   Icon(Icons.school_outlined,
                       color: selected ? AppColors.primary : AppColors.outline,
                       size: 20),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(level,
                         style: TextStyle(
@@ -390,16 +390,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 : AppColors.onSurface)),
                   ),
                   if (selected)
-                    const Icon(Icons.check, color: AppColors.primary, size: 16),
+                    Icon(Icons.check, color: AppColors.primary, size: 16),
                 ],
               ),
             ),
           );
         }).toList(),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         GestureDetector(
           onTap: _nextStep,
-          child: const Text('SKIP →',
+          child: Text('SKIP →',
               style: TextStyle(fontFamily: 'Space Grotesk',
                   fontSize: 10, letterSpacing: 2,
                   color: AppColors.outline,
@@ -417,8 +417,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           onTap: () => setState(() => _domain = _domains[i]),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(20),
+            margin: EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: selected
                   ? AppColors.primary.withOpacity(0.10)
@@ -433,7 +433,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 Icon(_domainIcons[i],
                     color: selected ? AppColors.primary : AppColors.outline,
                     size: 24),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Text(_domains[i],
                       style: TextStyle(
@@ -446,7 +446,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               : AppColors.onSurface)),
                 ),
                 if (selected)
-                  const Icon(Icons.check, color: AppColors.primary, size: 18),
+                  Icon(Icons.check, color: AppColors.primary, size: 18),
               ],
             ),
           ),

@@ -318,10 +318,16 @@ async def generate_reyna_briefing(
 
 def _parse_json(text: str) -> Dict[str, Any]:
     """Strip markdown fences and parse the first JSON object found."""
-    if text.startswith("```"):
-        lines = text.splitlines()
-        lines = [l for l in lines if not l.startswith("```")]
-        text = "\n".join(lines)
+    import re
+    # Extract just the JSON object from the text in case the LLM added conversational filler
+    match = re.search(r'\{(?:[^{}]|(?(?=\{).*\}))*\}', text, re.DOTALL)
+    if match:
+        text = match.group(0)
+    else:
+        # Fallback regex if the recursive-ish pattern fails
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if match:
+            text = match.group(0)
     return json.loads(text)
 
 

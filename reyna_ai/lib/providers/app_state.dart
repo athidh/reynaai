@@ -1,7 +1,9 @@
 // lib/providers/app_state.dart
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
 class Mission {
   final String id;
@@ -42,6 +44,15 @@ class FlashcardModel {
 }
 
 class AppState extends ChangeNotifier {
+  // ── Theme State ────────────────────────────────────────────────────────────
+  ThemeMode themeMode = ThemeMode.light;
+
+  void toggleTheme() {
+    themeMode = themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    AppColors.isDark = (themeMode == ThemeMode.dark);
+    notifyListeners();
+  }
+
   // ── Real Auth State ────────────────────────────────────────────────────────
   String? token;
   String? userId;
@@ -49,9 +60,13 @@ class AppState extends ChangeNotifier {
   String? domainInterest;
   bool get isLoggedIn => token != null;
 
-  // ── Engagement / Rank ──────────────────────────────────────────────────────
+  // ── Engagement / Rank / Analytics (R8) ─────────────────────────────────────
   double engagementScore = 0.0;
   String engagementLevel = 'iron'; // iron, gold, radiant
+  
+  // Analytics R8
+  String battleRankBadge = 'Novice';
+  List<Map<String, dynamic>> engagementTrendData = [];
 
   // ── ML Success Probability & Battle Readiness ──────────────────────────────
   double? successProbability;  // 0.0–1.0 from /tutor/predict
@@ -238,12 +253,25 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Generate Flashcards from transcript ───────────────────────────────────
+  bool flashcardGenerationFailed = false;
+
   Future<void> generateCardsFromTranscript({
     required String transcriptText,
     String? domain,
   }) async {
-    if (token == null || token == 'mock_token' || !isLoggedIn) return;
-    if (transcriptText.isEmpty) return;
+    flashcardGenerationFailed = false;
+    notifyListeners();
+
+    if (token == null || token == 'mock_token' || !isLoggedIn) {
+      flashcardGenerationFailed = true;
+      notifyListeners();
+      return;
+    }
+    if (transcriptText.isEmpty) {
+      flashcardGenerationFailed = true;
+      notifyListeners();
+      return;
+    }
 
     try {
       final response = await ApiService.generateCards(
@@ -263,11 +291,14 @@ class AppState extends ChangeNotifier {
           );
         }).toList();
         flashcardsReady = true;
-        notifyListeners();
+      } else {
+        flashcardGenerationFailed = true;
       }
     } catch (e) {
+      flashcardGenerationFailed = true;
       debugPrint('[generateCardsFromTranscript] Failed: $e');
     }
+    notifyListeners();
   }
 
   // ── Token persistence (shared_preferences) ───────────────────────────────
@@ -333,6 +364,8 @@ class AppState extends ChangeNotifier {
     dynamicFlashcards = [];
     lastVideoTranscript = '';
     lastVideoId = null;
+    engagementTrendData = [];
+    battleRankBadge = 'Novice';
     clearSession();
     notifyListeners();
   }
@@ -378,6 +411,19 @@ class AppState extends ChangeNotifier {
       final features = data['features'] as Map<String, dynamic>? ?? {};
       engagementScore = (features['engagement_score'] as num?)?.toDouble() ?? 0.0;
       engagementLevel = _scoreToRank(engagementScore);
+      
+      // Also load R8 analytics trend data for charts if userId is available
+      if (userId != null) {
+        try {
+          final analyticsData = await ApiService.getAnalytics(token!, userId!);
+          battleRankBadge = analyticsData['battle_badge'] as String? ?? 'Novice';
+          
+          final rawTrend = analyticsData['engagement_trend'] as List? ?? [];
+          engagementTrendData = rawTrend.cast<Map<String, dynamic>>();
+        } catch (e) {
+          debugPrint('[loadEngagementProfile.analytics] Failed: $e');
+        }
+      }
       notifyListeners();
     } catch (e) {
       debugPrint('[loadEngagementProfile] Failed: $e');

@@ -122,17 +122,22 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     final state = context.read<AppState>();
     if (state.lastVideoTranscript.isEmpty) return;
     setState(() => _fetchingCards = true);
+    
     // Soft reset — keep existing cards visible while regenerating
     state.resetCardIndex();
+    final previousCount = state.dynamicFlashcards.length;
+    
     await state.generateCardsFromTranscript(
       transcriptText: state.lastVideoTranscript,
       domain: state.domainInterest,
     );
+    
     if (mounted) {
       setState(() {
         _fetchingCards = false;
         _mixedDeck = _buildMixedDeck(state.dynamicFlashcards);
         _lastKnownCardCount = _mixedDeck.length;
+        
         // Reset scoring for the new deck
         _totalRecognitionTime = 0.0;
         _cardsAnswered = 0;
@@ -143,6 +148,17 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
         _selectedOption = null;
         _answerCtrl.clear();
       });
+      
+      // If no new cards were added, backend probably failed
+      if (state.dynamicFlashcards.length <= previousCount && !state.flashcardsReady) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Server unavailable. Showing offline flashcards.',
+                style: TextStyle(fontFamily: 'Space Grotesk')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -273,19 +289,19 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
         backgroundColor: AppColors.surface,
         body: Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const SizedBox.square(
+            SizedBox.square(
               dimension: 32,
               child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
             ),
-            const SizedBox(height: 20),
-            const Text('GENERATING ARENA CARDS…',
+            SizedBox(height: 20),
+            Text('GENERATING ARENA CARDS…',
                 style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 11,
                     letterSpacing: 2,
                     color: AppColors.outline)),
-            const SizedBox(height: 8),
-            const Text('Reyna is synthesizing Socratic questions from your video.',
+            SizedBox(height: 8),
+            Text('Reyna is synthesizing Socratic questions from your video.',
                 style: TextStyle(
                     fontFamily: 'Manrope', fontSize: 12,
                     color: AppColors.onSurfaceVariant),
@@ -334,12 +350,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
           child: Column(children: [
             // ── Header ─────────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Column(children: [
                 Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Text('FLASHCARD\nARENA',
+                      Text('FLASHCARD\nARENA',
                           style: TextStyle(
                               fontFamily: 'Space Grotesk',
                               fontSize: 26,
@@ -349,10 +365,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                               color: AppColors.onSurface)),
                       if (state.dynamicFlashcards.isNotEmpty)
                         Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          margin: EdgeInsets.only(top: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           color: AppColors.primary.withOpacity(0.1),
-                          child: const Text('FROM YOUR VIDEO',
+                          child: Text('FROM YOUR VIDEO',
                               style: TextStyle(
                                   fontFamily: 'Space Grotesk',
                                   fontSize: 7,
@@ -365,20 +381,20 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                   // remaining counter
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     RichText(text: TextSpan(
-                      style: const TextStyle(fontFamily: 'Space Grotesk',
+                      style: TextStyle(fontFamily: 'Space Grotesk',
                           fontSize: 22, fontWeight: FontWeight.w900,
                           color: AppColors.primary),
                       children: [
                         TextSpan(text: '${state.remaining}'),
-                        TextSpan(text: '/$total', style: const TextStyle(
+                        TextSpan(text: '/$total', style: TextStyle(
                             fontSize: 14, color: AppColors.outline)),
                       ],
                     )),
-                    const Text('REMAINING', style: TextStyle(
+                    Text('REMAINING', style: TextStyle(
                         fontFamily: 'Space Grotesk', fontSize: 8,
                         letterSpacing: 2, color: AppColors.outline)),
                   ]),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   // refresh button
                   GestureDetector(
                     onTap: _fetchingCards ? null : _forceRefresh,
@@ -386,31 +402,31 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                       width: 36, height: 36,
                       color: AppColors.surfaceContainerHigh,
                       child: _fetchingCards
-                          ? const Center(child: SizedBox.square(
+                          ? Center(child: SizedBox.square(
                               dimension: 14,
                               child: CircularProgressIndicator(
                                   strokeWidth: 1.5, color: AppColors.primary)))
-                          : const Icon(Icons.refresh,
+                          : Icon(Icons.refresh,
                               color: AppColors.primary, size: 18),
                     ),
                   ),
                 ]),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _HudBar(progress: progress),
               ]),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Column(children: [
 
                   // ── Question card ─────────────────────────────────────────
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerHighest.withOpacity(0.35),
                       border: Border.all(color: AppColors.primaryContainer, width: 1.5),
@@ -420,34 +436,34 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Row(children: [
                         Text(card.id,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Space Grotesk', fontSize: 9,
                                 letterSpacing: 2, color: AppColors.outlineVariant)),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           color: AppColors.primary.withOpacity(0.12),
                           child: Text(card.difficulty,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontFamily: 'Space Grotesk', fontSize: 7,
                                   letterSpacing: 1.5, color: AppColors.primary,
                                   fontWeight: FontWeight.w700)),
                         ),
                       ]),
-                      const SizedBox(height: 12),
-                      const Text('QUESTION',
+                      SizedBox(height: 12),
+                      Text('QUESTION',
                           style: TextStyle(
                               fontFamily: 'Space Grotesk', fontSize: 8,
                               letterSpacing: 2, color: AppColors.outline)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(card.question,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontFamily: 'Manrope', fontSize: 15,
                               height: 1.5, color: AppColors.onSurface)),
                     ]),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // ── Fill-in-the-blank input ───────────────────────────────
                   // ── Answer area: MCQ buttons OR text input ──────────────
@@ -455,7 +471,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(bottom: 8),
                           child: Text('CHOOSE AN ANSWER',
                               style: TextStyle(
@@ -495,8 +511,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                             },
                             child: Container(
                               width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(
+                              margin: EdgeInsets.only(bottom: 8),
+                              padding: EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: bg,
@@ -512,7 +528,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                                           fontSize: 11, fontWeight: FontWeight.w900,
                                           color: fg))),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12),
                                 Expanded(child: Text(opt,
                                     style: TextStyle(
                                         fontFamily: 'Manrope', fontSize: 13,
@@ -540,8 +556,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     ),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
-                        child: const Text('YOUR ANSWER',
+                        padding: EdgeInsets.fromLTRB(14, 10, 14, 0),
+                        child: Text('YOUR ANSWER',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk', fontSize: 8,
                                 letterSpacing: 2, color: AppColors.outline)),
@@ -552,13 +568,13 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                         enabled: !_answered,
                         maxLines: 4,
                         minLines: 3,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 14,
                             color: AppColors.onSurface,
                             height: 1.5),
                         cursorColor: AppColors.primary,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Type your answer here…',
                           hintStyle: TextStyle(
                               fontFamily: 'Manrope',
@@ -575,10 +591,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
                   // ── Feedback banner ───────────────────────────────────────
                   if (_answered) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       color: _feedback.startsWith('✅')
                           ? const Color(0xFF4CAF50).withOpacity(0.12)
@@ -600,10 +616,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
                   // ── Answer reveal ─────────────────────────────────────────
                   if (_showAnswer) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.06),
                         border: Border.all(
@@ -611,20 +627,20 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                       ),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                        const Text('CORRECT ANSWER',
+                        Text('CORRECT ANSWER',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk', fontSize: 8,
                                 letterSpacing: 2, color: AppColors.primary)),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(card.answer,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Manrope', fontSize: 14,
                                 height: 1.5, color: AppColors.onSurface)),
                       ]),
                     ),
                   ],
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // ── Action buttons ────────────────────────────────────────
                   if (!_answered) ...[
@@ -634,7 +650,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                         child: GestureDetector(
                           onTap: () => setState(() => _showAnswer = !_showAnswer),
                           child: Container(
-                            padding: const EdgeInsets.all(13),
+                            padding: EdgeInsets.all(13),
                             decoration: BoxDecoration(
                               color: AppColors.surfaceContainerHigh,
                               border: Border.all(
@@ -642,7 +658,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                             ),
                             child: Center(child: Text(
                               _showAnswer ? 'HIDE ANSWER' : 'REVEAL ANSWER',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontFamily: 'Space Grotesk', fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1, color: AppColors.outline),
@@ -650,18 +666,18 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       // Submit answer
                       Expanded(
                         child: GestureDetector(
                           onTap: () => _submitAnswer(state),
                           child: Container(
-                            padding: const EdgeInsets.all(13),
-                            decoration: const BoxDecoration(
+                            padding: EdgeInsets.all(13),
+                            decoration: BoxDecoration(
                               gradient: LinearGradient(colors: [
                                 AppColors.primary, AppColors.tertiary]),
                             ),
-                            child: const Center(child: Text('SUBMIT ANSWER',
+                            child: Center(child: Text('SUBMIT ANSWER',
                                 style: TextStyle(
                                     fontFamily: 'Space Grotesk', fontSize: 11,
                                     fontWeight: FontWeight.w900,
@@ -676,12 +692,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                       onTap: () => _nextCard(state),
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: const BoxDecoration(
+                        padding: EdgeInsets.all(14),
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(colors: [
                             AppColors.primary, AppColors.tertiary]),
                         ),
-                        child: const Center(child: Text('NEXT CARD  →',
+                        child: Center(child: Text('NEXT CARD  →',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk', fontSize: 13,
                                 fontWeight: FontWeight.w900,
@@ -690,28 +706,28 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // ── Stats bento ───────────────────────────────────────────
                   Row(children: [
                     Expanded(child: _StatTile(
                         label: 'AVG TIME',
                         value: '${_avgRecognitionTime.toStringAsFixed(1)}s')),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Expanded(child: _StatTile(
                         label: 'DIFFICULTY',
                         value: card.difficulty,
                         color: AppColors.tertiary)),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Expanded(child: _StatTile(
                         label: 'DONE', value: '$done/$total')),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Expanded(child: _StatTile(
                         label: 'PROFICIENCY',
                         value: '${(_combatProficiency * 100).round()}%',
                         color: _proficiencyColor)),
                   ]),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                 ]),
               ),
             ),
@@ -737,7 +753,7 @@ class _LockedState extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32),
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
                 width: 100, height: 100,
@@ -758,7 +774,7 @@ class _LockedState extends StatelessWidget {
                       child: Center(
                         child: Transform.rotate(
                           angle: -math.pi / 4,
-                          child: const Icon(Icons.style,
+                          child: Icon(Icons.style,
                               color: AppColors.primary, size: 22),
                         ),
                       ),
@@ -766,32 +782,32 @@ class _LockedState extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
-              const Text('ARENA LOCKED',
+              SizedBox(height: 28),
+              Text('ARENA LOCKED',
                   style: TextStyle(
                       fontFamily: 'Space Grotesk', fontSize: 22,
                       fontWeight: FontWeight.w900, letterSpacing: 2,
                       color: AppColors.onSurface)),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 'Watch a video in the COMMAND tab.\nReyna generates flashcards from your video the moment it ends.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontFamily: 'Manrope', fontSize: 13,
                     height: 1.6, color: AppColors.onSurfaceVariant),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               Builder(builder: (ctx) => GestureDetector(
                 onTap: () {
                   final shell = ctx.findAncestorStateOfType<AppShellState>();
                   shell?.switchTab(0);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                  decoration: const BoxDecoration(
+                  padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                         colors: [AppColors.primary, AppColors.tertiary]),
                   ),
-                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Icon(Icons.play_circle, color: Colors.white, size: 18),
                     SizedBox(width: 8),
                     Text('GO TO COMMAND TAB',
@@ -856,22 +872,21 @@ class _HudBar extends StatelessWidget {
 class _StatTile extends StatelessWidget {
   final String label;
   final String value;
-  final Color color;
-  const _StatTile({required this.label, required this.value,
-      this.color = AppColors.onSurface});
+  final Color? color;
+  _StatTile({required this.label, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8),
       color: AppColors.surfaceContainerHigh,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         FittedBox(
           child: Text(value,
               style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 16,
-                  fontWeight: FontWeight.w900, color: color)),
+                  fontWeight: FontWeight.w900, color: color ?? AppColors.onSurface)),
         ),
-        Text(label, style: const TextStyle(
+        Text(label, style: TextStyle(
             fontFamily: 'Space Grotesk', fontSize: 6,
             letterSpacing: 1.5, color: AppColors.outline)),
       ]),
@@ -916,7 +931,7 @@ class _SessionComplete extends StatelessWidget {
       backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: EdgeInsets.all(28),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Container(
               width: 100, height: 100,
@@ -930,26 +945,26 @@ class _SessionComplete extends StatelessWidget {
                         fontWeight: FontWeight.w900, color: rankColor)),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Text('SESSION COMPLETE — $rankLabel',
                 style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 18,
                     fontWeight: FontWeight.w900, letterSpacing: 1,
                     color: rankColor)),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text('Combat Proficiency: $pct%  •  $correctCount/$totalAnswered correct  •  ${avgTime.toStringAsFixed(1)}s avg',
-                style: const TextStyle(fontFamily: 'Manrope', fontSize: 12,
+                style: TextStyle(fontFamily: 'Manrope', fontSize: 12,
                     color: AppColors.onSurfaceVariant),
                 textAlign: TextAlign.center),
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
             GestureDetector(
               onTap: onReset,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 36),
-                decoration: const BoxDecoration(
+                padding: EdgeInsets.symmetric(vertical: 14, horizontal: 36),
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                       colors: [AppColors.primary, AppColors.tertiary]),
                 ),
-                child: const Text('REPLAY SESSION',
+                child: Text('REPLAY SESSION',
                     style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 13,
                         fontWeight: FontWeight.w900, letterSpacing: 2,
                         color: Colors.white)),

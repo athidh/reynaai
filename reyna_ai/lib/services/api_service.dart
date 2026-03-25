@@ -40,20 +40,41 @@ class ApiService {
       http.post(uri, headers: headers, body: body).timeout(_llmTimeout);
 
   static Map<String, dynamic> _decode(http.Response r) {
-    final body = jsonDecode(r.body);
     if (r.statusCode >= 200 && r.statusCode < 300) {
-      return body as Map<String, dynamic>;
+      if (r.body.trim().isEmpty) return {};
+      try {
+        return jsonDecode(r.body) as Map<String, dynamic>;
+      } catch (_) {
+        throw Exception('Invalid response format from server (Status ${r.statusCode})');
+      }
     }
-    throw Exception((body as Map)['detail'] ?? 'Request failed (${r.statusCode})');
+    
+    // Try to parse error detail, fallback to generic message if HTML
+    try {
+      final body = jsonDecode(r.body);
+      throw Exception((body as Map)['detail'] ?? 'Request failed (${r.statusCode})');
+    } catch (_) {
+      throw Exception('Server error (${r.statusCode}): Service may be down or unavailable.');
+    }
   }
 
   static List<Map<String, dynamic>> _decodeList(http.Response r) {
     if (r.statusCode >= 200 && r.statusCode < 300) {
-      final body = jsonDecode(r.body) as List;
-      return body.cast<Map<String, dynamic>>();
+      try {
+        final body = jsonDecode(r.body) as List;
+        return body.cast<Map<String, dynamic>>();
+      } catch (_) {
+        throw Exception('Invalid response format from server (Status ${r.statusCode})');
+      }
     }
-    final err = jsonDecode(r.body);
-    throw Exception((err as Map)['detail'] ?? 'Request failed (${r.statusCode})');
+    
+    // Try to parse error detail, fallback to generic message if HTML
+    try {
+      final err = jsonDecode(r.body);
+      throw Exception((err as Map)['detail'] ?? 'Request failed (${r.statusCode})');
+    } catch (_) {
+      throw Exception('Server error (${r.statusCode}): Service may be down or unavailable.');
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -212,6 +233,16 @@ class ApiService {
       String token) async {
     final r = await _get(
       Uri.parse('$baseUrl/tutor/profile'),
+      headers: _authHeaders(token),
+    );
+    return _decode(r);
+  }
+
+  /// Fetch historical event trends and battle badge (R8 feature)
+  static Future<Map<String, dynamic>> getAnalytics(
+      String token, String userId) async {
+    final r = await _get(
+      Uri.parse('$baseUrl/api/v1/analytics/$userId'),
       headers: _authHeaders(token),
     );
     return _decode(r);

@@ -26,6 +26,12 @@ dependencies:
 
   # Local Storage (auth token)
   shared_preferences: ^2.3.2
+  fl_chart: ^1.2.0
+
+  # Voice Chat Integration
+  web_socket_channel: ^2.4.0
+  record: ^5.0.5
+  audioplayers: ^5.2.1
 
 dev_dependencies:
   flutter_test:

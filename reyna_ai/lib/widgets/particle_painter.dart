@@ -209,11 +209,11 @@ class _ParticleLogoAnimationState extends State<ParticleLogoAnimation>
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28),
 
                     // "REYNA AI"
                     ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
+                      shaderCallback: (bounds) => LinearGradient(
                         colors: [AppColors.primary, AppColors.primaryContainer],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -236,7 +236,7 @@ class _ParticleLogoAnimationState extends State<ParticleLogoAnimation>
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
 
                     // Subtext
                     Text(

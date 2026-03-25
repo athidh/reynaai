@@ -28,7 +28,7 @@ class AuthField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Space Grotesk',
             fontSize: 10,
             fontWeight: FontWeight.w700,
@@ -36,12 +36,12 @@ class AuthField extends StatelessWidget {
             color: AppColors.primary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscure,
           keyboardType: keyboardType,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Space Grotesk',
             color: AppColors.onSurface,
             fontSize: 14,
@@ -55,20 +55,20 @@ class AuthField extends StatelessWidget {
             fillColor: AppColors.surfaceContainerHigh,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
-            focusedBorder: const OutlineInputBorder(
+            focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.zero,
               borderSide:
                   BorderSide(color: AppColors.primaryContainer, width: 1.5),
             ),
-            errorBorder: const OutlineInputBorder(
+            errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.zero,
               borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
-            focusedErrorBorder: const OutlineInputBorder(
+            focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.zero,
               borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
-            errorStyle: const TextStyle(
+            errorStyle: TextStyle(
               fontFamily: 'Space Grotesk',
               color: AppColors.error,
               fontSize: 10,
@@ -76,7 +76,7 @@ class AuthField extends StatelessWidget {
             ),
             suffixIcon: suffixIcon,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           ),
         ),
       ],

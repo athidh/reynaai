@@ -27,20 +27,20 @@ class GlassField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: const TextStyle(
+            style: TextStyle(
                 fontFamily: 'Space Grotesk',
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.5,
                 color: AppColors.primary)),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         TextFormField(
           controller: controller,
           obscureText: obscure,
           keyboardType: keyboardType,
           validator: validator,
           cursorColor: AppColors.primary,
-          style: const TextStyle(
+          style: TextStyle(
               fontFamily: 'Space Grotesk',
               color: AppColors.onSurface,
               fontSize: 14,
@@ -50,7 +50,7 @@ class GlassField extends StatelessWidget {
             filled: true,
             // Glassmorphic: translucent indigo tint
             fillColor: AppColors.primary.withOpacity(0.08),
-            contentPadding: const EdgeInsets.symmetric(
+            contentPadding: EdgeInsets.symmetric(
                 horizontal: 18, vertical: 18),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -64,18 +64,18 @@ class GlassField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                   color: AppColors.primaryContainer, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
-            errorStyle: const TextStyle(
+            errorStyle: TextStyle(
                 fontFamily: 'Space Grotesk',
                 color: AppColors.error,
                 fontSize: 10,

@@ -65,7 +65,9 @@ class ReynaApp extends StatelessWidget {
     return MaterialApp(
       title: 'REYNA AI',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: state.themeMode,
       initialRoute: state.isLoggedIn ? '/app' : '/',
       routes: {
         '/': (_) => const LandingScreen(),

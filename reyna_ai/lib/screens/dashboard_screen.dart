@@ -102,20 +102,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surfaceContainerHigh,
-        title: const Text('CONFIRM LOGOUT',
+        title: Text('CONFIRM LOGOUT',
             style: TextStyle(
                 fontFamily: 'Space Grotesk',
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
                 color: AppColors.onSurface,
                 letterSpacing: 1)),
-        content: const Text('Are you sure you want to end your combat session?',
+        content: Text('Are you sure you want to end your combat session?',
             style: TextStyle(
                 fontFamily: 'Manrope', fontSize: 14, color: AppColors.onSurfaceVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CANCEL',
+            child: Text('CANCEL',
                 style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 12,
@@ -129,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               context.read<AppState>().logout();
               Navigator.of(context).pushReplacementNamed('/landing');
             },
-            child: const Text('LOGOUT',
+            child: Text('LOGOUT',
                 style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 12,
@@ -167,13 +167,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // ── Header ──────────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Top row
                     Row(children: [
-                      const Flexible(
+                      Flexible(
                         child: Text('WELCOME BACK,',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk',
@@ -185,19 +185,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const Spacer(),
                       if (state.successProbability != null)
                         _BattleReadinessBadge(state: state),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
+                      // Theme Toggle
+                      GestureDetector(
+                        onTap: () => context.read<AppState>().toggleTheme(),
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerHigh,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.outline.withOpacity(0.3)),
+                          ),
+                          child: Icon(
+                            state.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode,
+                            size: 14,
+                            color: AppColors.outline,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      // Logout
                       GestureDetector(
                         onTap: () => _showLogoutDialog(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceContainerHigh,
                             border: Border.all(color: AppColors.outline.withOpacity(0.3)),
                           ),
                           child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.logout, size: 12, color: AppColors.outline),
-                            const SizedBox(width: 4),
-                            const Text('LOGOUT',
+                            Icon(Icons.logout, size: 12, color: AppColors.outline),
+                            SizedBox(width: 4),
+                            Text('LOGOUT',
                                 style: TextStyle(
                                     fontFamily: 'Space Grotesk',
                                     fontSize: 8,
@@ -208,22 +227,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     ]),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(username,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontFamily: 'Space Grotesk',
                               fontSize: 40,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -1.5,
                               color: AppColors.onSurface)),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
 
                     _StatsBar(state: state),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     // ── Search Bar + Paste URL ──────────────────────────────
                     Container(
@@ -235,7 +254,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Expanded(
                           child: TextField(
                             controller: _searchCtrl,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Space Grotesk',
                                 color: AppColors.onSurface,
                                 fontSize: 13,
@@ -245,12 +264,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               hintText: state.domainInterest != null
                                   ? 'Search or paste YouTube link...'
                                   : 'Search YouTube or paste a link...',
-                              hintStyle: const TextStyle(
+                              hintStyle: TextStyle(
                                   fontFamily: 'Space Grotesk',
                                   color: AppColors.outlineVariant,
                                   fontSize: 12),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
+                              contentPadding: EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 12),
                             ),
                             onSubmitted: (_) => _searchMissions(),
@@ -269,7 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             width: 40,
                             height: 48,
                             color: AppColors.surfaceContainerHighest,
-                            child: const Icon(Icons.content_paste,
+                            child: Icon(Icons.content_paste,
                                 color: AppColors.outline, size: 18),
                           ),
                         ),
@@ -281,13 +300,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             height: 48,
                             color: AppColors.primary,
                             child: _searching
-                                ? const Center(
+                                ? Center(
                                     child: SizedBox.square(
                                       dimension: 16,
                                       child: CircularProgressIndicator(
                                           color: Colors.white, strokeWidth: 2),
                                     ))
-                                : const Icon(Icons.search,
+                                : Icon(Icons.search,
                                     color: AppColors.onPrimary, size: 20),
                           ),
                         ),
@@ -295,7 +314,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
 
                     // ── Language Filter Chips ────────────────────────────────
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     SizedBox(
                       height: 32,
                       child: ListView(
@@ -312,8 +331,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
+                              margin: EdgeInsets.only(right: 8),
+                              padding: EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                 color: selected
@@ -342,11 +361,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     // Section label
                     Row(children: [
-                      const Text('⚡ COMBAT MISSIONS',
+                      Text('⚡ COMBAT MISSIONS',
                           style: TextStyle(
                               fontFamily: 'Space Grotesk',
                               fontSize: 20,
@@ -355,20 +374,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               color: AppColors.onSurface)),
                       const Spacer(),
                       if (state.missionsLoading)
-                        const SizedBox.square(
+                        SizedBox.square(
                           dimension: 12,
                           child: CircularProgressIndicator(
                               strokeWidth: 1.5, color: AppColors.primary),
                         )
                       else
                         Text('${missions.length} ACTIVE',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Space Grotesk',
                                 fontSize: 9,
                                 letterSpacing: 1.5,
                                 color: AppColors.outline)),
                     ]),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -376,7 +395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // ── Mission grid ─────────────────────────────────────────────────
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 100),
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate(
                   (ctx, i) => _MissionCard(
@@ -484,25 +503,27 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
         progressIndicatorColor: AppColors.primary,
         onEnded: (_) => _fetchTranscriptAndGenerateCards(),
       ),
-      builder: (ctx, player) => Scaffold(
-        backgroundColor: AppColors.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
+      builder: (ctx, player) {
+        final state = ctx.watch<AppState>();
+        return Scaffold(
+          backgroundColor: AppColors.surface,
+          body: SafeArea(
+            child: Column(
+              children: [
               // Top bar
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(children: [
                   GestureDetector(
                     onTap: widget.onClose,
-                    child: const Icon(Icons.arrow_back,
+                    child: Icon(Icons.arrow_back,
                         color: AppColors.primary, size: 22),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       widget.mission.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Space Grotesk',
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
@@ -513,22 +534,24 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
                   ),
                 ]),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               // YouTube player
               player,
 
               // Status bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(children: [
-                  const Icon(Icons.info_outline_rounded,
+                  Icon(Icons.info_outline_rounded,
                       size: 14, color: AppColors.outline),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       _transcriptDone
-                          ? '✅ TRANSCRIPT SAVED — Flashcards generated in Arena!'
+                          ? (state.flashcardGenerationFailed
+                              ? '⚠️ TRANSCRIPT SAVED — Server failed to generate flashcards.'
+                              : '✅ TRANSCRIPT SAVED — Flashcards generated in Arena!')
                           : _fetchingTranscript
                               ? '⏳ Saving transcript & generating flashcards...'
                               : 'Watch till the end to generate Arena flashcards',
@@ -537,7 +560,9 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
                           fontSize: 10,
                           letterSpacing: 0.5,
                           color: _transcriptDone
-                              ? const Color(0xFF4CAF50)
+                              ? (state.flashcardGenerationFailed 
+                                 ? AppColors.error 
+                                 : const Color(0xFF4CAF50))
                               : AppColors.outline),
                     ),
                   ),
@@ -547,7 +572,7 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
               // "Go to Arena" button after transcript is done
               if (_transcriptDone)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   child: GestureDetector(
                     onTap: () {
                       widget.onClose();
@@ -562,13 +587,13 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
                     },
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(14),
+                      padding: EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [AppColors.primary, AppColors.secondary],
                         ),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text('⚔️  GO TO ARENA →',
                             style: TextStyle(
                                 fontFamily: 'Space Grotesk',
@@ -583,7 +608,8 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
             ],
           ),
         ),
-      ),
+      );
+      },
     );
   }
 }
@@ -606,7 +632,7 @@ class _BattleReadinessBadge extends StatelessWidget {
     final rank = state.battleReadinessRank;
     final color = _rankColors[rank] ?? AppColors.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         border: Border.all(color: color.withOpacity(0.5)),
@@ -616,7 +642,7 @@ class _BattleReadinessBadge extends StatelessWidget {
           width: 6, height: 6,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 5),
+        SizedBox(width: 5),
         Text('${state.battleReadinessPercent} READY',
             style: TextStyle(
                 fontFamily: 'Space Grotesk',
@@ -637,22 +663,22 @@ class _StatsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       color: AppColors.surfaceContainerHigh,
       child: Row(children: [
         Expanded(child: _Stat('${state.powerLevel}', 'POW LEVEL', AppColors.primary)),
         Container(width: 1, height: 40, color: AppColors.outlineVariant),
-        Expanded(child: _Stat('${state.streak}', 'DAY STREAK', AppColors.onSurface)),
+        Expanded(child: _Stat('${state.streak}', 'DAY STREAK', AppColors.primary)),
         Container(width: 1, height: 40, color: AppColors.outlineVariant),
         Expanded(
           child: _Stat('${(state.xpGained / 1000).toStringAsFixed(1)}k',
-              'XP GAINED', AppColors.tertiary),
+              'XP GAINED', AppColors.primary),
         ),
         if (state.successProbability != null) ...[
           Container(width: 1, height: 40, color: AppColors.outlineVariant),
           Expanded(
             child: _Stat(state.battleReadinessPercent, 'BATTLE READY',
-                _rankToColor(state.battleReadinessRank)),
+                AppColors.primary),
           ),
         ],
       ]),
@@ -689,11 +715,11 @@ class _Stat extends StatelessWidget {
                 color: color)),
       ),
       Text(label,
-          style: const TextStyle(
+          style: TextStyle(
               fontFamily: 'Space Grotesk',
               fontSize: 7,
               letterSpacing: 1.5,
-              color: AppColors.outline)),
+              color: AppColors.onSurface)),
     ]);
   }
 }
@@ -735,7 +761,7 @@ class _MissionCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: AppColors.surfaceContainerHighest,
-                    child: const Icon(Icons.play_circle_outline,
+                    child: Icon(Icons.play_circle_outline,
                         color: AppColors.primary, size: 28),
                   ),
                 ),
@@ -750,7 +776,7 @@ class _MissionCard extends StatelessWidget {
                         border: Border.all(color: Colors.white54),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(Icons.play_arrow,
+                      child: Icon(Icons.play_arrow,
                           color: Colors.white, size: 22),
                     ),
                   ),
@@ -759,7 +785,7 @@ class _MissionCard extends StatelessWidget {
                   top: 6,
                   left: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     color: AppColors.surface.withOpacity(0.8),
                     child: Text(mission.rank,
                         style: TextStyle(
@@ -774,10 +800,10 @@ class _MissionCard extends StatelessWidget {
             )
           else
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
               child: Row(children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   color: accentColor.withOpacity(0.12),
                   child: Text(mission.rank,
                       style: TextStyle(
@@ -789,7 +815,7 @@ class _MissionCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text('${mission.cardCount}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Space Grotesk',
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
@@ -801,11 +827,11 @@ class _MissionCard extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(
                   child: Text(mission.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Space Grotesk',
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
@@ -815,7 +841,7 @@ class _MissionCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis),
                 ),
                 Text(mission.subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 9,
                         color: AppColors.onSurfaceVariant),
@@ -827,7 +853,7 @@ class _MissionCard extends StatelessWidget {
 
           // Progress bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+            padding: EdgeInsets.fromLTRB(12, 6, 12, 10),
             child: Column(children: [
               ClipRect(
                 child: SizedBox(
@@ -844,11 +870,11 @@ class _MissionCard extends StatelessWidget {
                   ]),
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Row(children: [
                 Flexible(
                   child: Text('${(mission.progress * 100).toInt()}%',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Space Grotesk',
                           fontSize: 9,
                           color: AppColors.onSurface),

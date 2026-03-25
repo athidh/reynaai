@@ -139,7 +139,7 @@ class _SignupScreenState extends State<SignupScreen>
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontFamily: 'Space Grotesk')),
+        content: Text(message, style: TextStyle(fontFamily: 'Space Grotesk')),
         backgroundColor: Colors.redAccent,
       ),
     );
@@ -196,11 +196,11 @@ class _SignupScreenState extends State<SignupScreen>
                             borderRadius: BorderRadius.circular(12),
                             color: AppColors.primary.withOpacity(0.1),
                           ),
-                          child: const Icon(Icons.arrow_back,
+                          child: Icon(Icons.arrow_back,
                               color: AppColors.primary, size: 20),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
 
                       // ── Header with stagger ──────────────────────────────
                       SlideTransition(
@@ -215,14 +215,14 @@ class _SignupScreenState extends State<SignupScreen>
                                 height: 4,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(2),
-                                  gradient: const LinearGradient(colors: [
+                                  gradient: LinearGradient(colors: [
                                     AppColors.primary,
                                     Color(0xFFFEDADA),
                                   ]),
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
+                              SizedBox(height: 16),
+                              Text(
                                 'Create\nAccount',
                                 style: TextStyle(
                                   fontFamily: 'Space Grotesk',
@@ -233,8 +233,8 @@ class _SignupScreenState extends State<SignupScreen>
                                   color: AppColors.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              const Text(
+                              SizedBox(height: 8),
+                              Text(
                                 'Join Reyna AI and start your learning journey',
                                 style: TextStyle(
                                   fontFamily: 'Manrope',
@@ -246,7 +246,7 @@ class _SignupScreenState extends State<SignupScreen>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
 
                       // ── Form with stagger ─────────────────────────────────
                       SlideTransition(
@@ -261,14 +261,14 @@ class _SignupScreenState extends State<SignupScreen>
                                 controller: _nameCtrl,
                                 validator: (v) => (v == null || v.length < 2) ? 'Name required' : null,
                               ),
-                              const SizedBox(height: 14),
+                              SizedBox(height: 14),
                               GlassField(
                                 label: 'EMAIL',
                                 controller: _emailCtrl,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: _validateEmail,
                               ),
-                              const SizedBox(height: 14),
+                              SizedBox(height: 14),
                               GlassField(
                                 label: 'PASSWORD',
                                 controller: _passCtrl,
@@ -282,46 +282,46 @@ class _SignupScreenState extends State<SignupScreen>
                                 ),
                                 validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
                               ),
-                              const SizedBox(height: 14),
+                              SizedBox(height: 14),
                               GlassField(
                                 label: 'CONFIRM PASSWORD',
                                 controller: _confirmCtrl,
                                 obscure: _obscure,
                                 validator: (v) => v != _passCtrl.text ? 'Passwords must match' : null,
                               ),
-                              const SizedBox(height: 24),
+                              SizedBox(height: 24),
 
                               // Age Band
                               _buildSectionHeader('AGE BRACKET'),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               _buildAgeBandSelector(),
-                              const SizedBox(height: 24),
+                              SizedBox(height: 24),
 
                               // Education
                               _buildSectionHeader('EDUCATION LEVEL'),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               _buildEducationSelector(),
-                              const SizedBox(height: 24),
+                              SizedBox(height: 24),
 
                               // Domain
                               _buildSectionHeader('YOUR DOMAIN'),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               _buildDomainGrid(),
-                              const SizedBox(height: 36),
+                              SizedBox(height: 36),
 
                               // Submit
                               GradientButton(
-                                label: 'CREATE ACCOUNT',
-                                onTap: state.isLoading ? null : _submit,
+                                text: 'Create Profile',
                                 isLoading: state.isLoading,
+                                onTap: _submit,
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20),
                               
                               // Login Link
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Already have an account? ',
                                     style: TextStyle(
                                       fontFamily: 'Manrope',
@@ -331,7 +331,7 @@ class _SignupScreenState extends State<SignupScreen>
                                   ),
                                   GestureDetector(
                                     onTap: () => Navigator.pushReplacementNamed(context, '/login'),
-                                    child: const Text(
+                                    child: Text(
                                       'Sign In',
                                       style: TextStyle(
                                         fontFamily: 'Space Grotesk',
@@ -343,7 +343,7 @@ class _SignupScreenState extends State<SignupScreen>
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20),
                             ],
                           ),
                         ),
@@ -362,7 +362,7 @@ class _SignupScreenState extends State<SignupScreen>
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Space Grotesk',
         fontSize: 12,
         letterSpacing: 2,
@@ -381,7 +381,7 @@ class _SignupScreenState extends State<SignupScreen>
           onTap: () => setState(() => _ageBand = band),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: selected 
@@ -415,8 +415,8 @@ class _SignupScreenState extends State<SignupScreen>
           onTap: () => setState(() => _education = level),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: selected
@@ -434,7 +434,7 @@ class _SignupScreenState extends State<SignupScreen>
                   color: selected ? AppColors.primary : AppColors.outline,
                   size: 20,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     level,
@@ -447,7 +447,7 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                 ),
                 if (selected)
-                  const Icon(Icons.check, color: AppColors.primary, size: 16),
+                  Icon(Icons.check, color: AppColors.primary, size: 16),
               ],
             ),
           ),
@@ -464,10 +464,10 @@ class _SignupScreenState extends State<SignupScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: 8),
               child: Text(
                 category.key,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Space Grotesk',
                   fontSize: 10,
                   letterSpacing: 2,
@@ -488,7 +488,7 @@ class _SignupScreenState extends State<SignupScreen>
                   }),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: selected
@@ -512,7 +512,7 @@ class _SignupScreenState extends State<SignupScreen>
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
         )),
         
@@ -524,7 +524,7 @@ class _SignupScreenState extends State<SignupScreen>
           }),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: _showCustomDomain
@@ -542,7 +542,7 @@ class _SignupScreenState extends State<SignupScreen>
                   color: _showCustomDomain ? AppColors.primary : AppColors.outline,
                   size: 20,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'CUSTOM DOMAIN',
@@ -555,14 +555,14 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                 ),
                 if (_showCustomDomain)
-                  const Icon(Icons.check, color: AppColors.primary, size: 16),
+                  Icon(Icons.check, color: AppColors.primary, size: 16),
               ],
             ),
           ),
         ),
         
         if (_showCustomDomain) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           GlassField(
             label: 'ENTER YOUR DOMAIN',
             controller: _customDomainCtrl,

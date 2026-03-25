@@ -173,9 +173,9 @@ class _ParticleHeroState extends State<ParticleHero>
                         begin: Alignment(shimmerX - 0.3, 0),
                         end: Alignment(shimmerX + 0.3, 0),
                         colors: [
-                          Colors.white.withOpacity(tv * 0.7),
-                          Colors.white.withOpacity(tv),
-                          Colors.white.withOpacity(tv * 0.7),
+                          const Color(0xFF1F1F2E).withOpacity(tv * 0.7),
+                          const Color(0xFF1F1F2E).withOpacity(tv),
+                          const Color(0xFF1F1F2E).withOpacity(tv * 0.7),
                         ],
                       ).createShader(bounds);
                     },
@@ -188,7 +188,7 @@ class _ParticleHeroState extends State<ParticleHero>
                         fontSize: fontSize,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -1,
-                        color: Colors.white,
+                        color: const Color(0xFF1F1F2E),
                         shadows: [
                           Shadow(
                               color: _kIndigo.withOpacity(0.90),
@@ -213,7 +213,7 @@ class _ParticleHeroState extends State<ParticleHero>
                   right: 0,
                   child: Opacity(
                     opacity: stv,
-                    child: const Text(
+                    child: Text(
                       'YOUR PERSONAL AI TUTOR',
                       textAlign: TextAlign.center,
                       style: TextStyle(
