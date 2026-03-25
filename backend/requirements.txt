@@ -28,3 +28,4 @@ youtube-transcript-api
 # --- Generative AI & API Clients ---
 openai
 httpx
+websockets

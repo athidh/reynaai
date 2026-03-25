@@ -3,15 +3,15 @@ from typing import Optional
 
 from beanie.operators import Eq
 from fastapi import APIRouter, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends
 from pydantic import BaseModel, EmailStr
 
-from app.core.security import create_access_token, decode_access_token, hash_password, verify_password
+from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
+from app.api.deps import get_current_user_id
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
@@ -47,25 +47,7 @@ class UserProfile(BaseModel):
     disability: Optional[str] = None
 
 
-# ── Dependency: get current user_id from JWT ──────────────────────────────────
-
-async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid or expired token.")
-    return payload["sub"]
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    """Return the full User document (needed by tutor for demographics)."""
-    from beanie import PydanticObjectId
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid or expired token.")
-    user = await User.get(PydanticObjectId(payload["sub"]))
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
-    return user
+# ── Shared Dependencies are now in app/api/deps.py ──────────────────────────
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────

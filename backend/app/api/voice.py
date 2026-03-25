@@ -13,7 +13,7 @@ import httpx
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import websockets
 
-from app.api.auth import verify_token
+from app.api.deps import verify_token
 from app.services.oulad_engine import predict_success
 from app.services.llama_service import chat_with_reyna_conversational
 from app.models.engagement import EngagementEvent

@@ -9,7 +9,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from app.api.auth import get_current_user_id
+from app.api.deps import get_current_user_id
 from app.models.engagement import EngagementEvent
 
 router = APIRouter(prefix="/tracker", tags=["tracker"])
